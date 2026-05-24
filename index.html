@@ -4345,42 +4345,42 @@ function drawPlayerTop(p, cam){
   X.restore();
 }
 
-// ---- the Grabby: tall upright humanoid, billboard-style ----
-// Feet anchored at the world position; a thin tapering body rises with a
-// smooth, featureless bulbous head bowed forward, and a writhing curtain
-// of long tendril-arms hangs down toward the ground. It leans toward the
-// prey and reaches further on a lunge. A faint static aura thickens when
-// it is aware. Drawn as a screen-upright billboard (not rotated to facing)
-// so it always looms front-on, like the reference silhouette.
+// ---- the Grabby: a "Quiet Place"-style blind predator, billboard ----
+// Feet-anchored upright billboard. A hunched, armored grey body on
+// powerful digitigrade legs, two long arms ending in claws reaching for
+// the prey, and the signature head that BLOOMS open into bony petals,
+// exposing the raw sensory membrane when it hunts (no eyes — it's blind
+// and hunts by sound). The head opens wider as it grows aware / lunges.
 function drawGrabbyTop(g, cam){
   const sx = g.x - cam.x, sy = g.y - cam.y;
-  if (sx < -260 || sx > W+260 || sy < -360 || sy > H+260) return;
+  if (sx < -260 || sx > W+260 || sy < -400 || sy > H+260) return;
 
   const lunge  = (g.state === 'lunge');
   const windup = (g.state === 'windup');
-  const reach  = lunge ? 1.32 : (windup ? 1.12 : 1.0);
+  const reach  = lunge ? 1.34 : (windup ? 1.14 : 1.0);
   const lr = g.radius;
   const t  = TROPHY.t;
   const aware  = g.knowsPlayer || g.losMemoryT > 0 || windup || lunge;
   const bright = (windup || lunge || g.flashT > 0);
 
-  const BODY   = '#04060a';            // near-black, cold
-  const HEIGHT = lr*3.8;               // feet -> crown
-  const headR  = lr*0.60;
-  const leanX  = clamp(Math.cos(g.facing), -1, 1);   // horizontal lean to prey
-  const sway   = Math.sin(t*1.1 + g.walk*0.25) * lr*0.10;
-  const topX   = leanX*lr*0.55*reach + sway;
+  // armored palette (cold grey, not black)
+  const SKIN='#262b31', SKIN_HI='#49535d', SKIN_LO='#10131a';
+  const HEIGHT = lr*3.9;
+  const headR  = lr*0.92;
+  const leanX  = clamp(Math.cos(g.facing), -1, 1);    // lean toward prey
+  const sway   = Math.sin(t*1.1 + g.walk*0.25) * lr*0.08;
+  const topX   = leanX*lr*0.6*reach + sway;
+  // how far the head has bloomed open (it opens to hunt)
+  let openK = bright ? 1.0 : (aware ? 0.55 : 0.12);
+  openK = clamp(openK + Math.sin(t*1.6)*0.05, 0, 1);
 
-  // central spine: p in 0..1 (0 = feet, 1 = crown)
-  const spine = (p) => ({ x: topX*p*p, y: -HEIGHT*reach*p });
+  const spine = (p)=>({ x: topX*p*p, y: -HEIGHT*reach*p });
 
   // ---------- ground shadow at the feet ----------
   X.fillStyle = 'rgba(0,0,0,0.5)';
-  X.beginPath();
-  X.ellipse(sx, sy + lr*0.16, lr*1.45, lr*0.46, 0, 0, Math.PI*2);
-  X.fill();
+  X.beginPath(); X.ellipse(sx, sy + lr*0.16, lr*1.5, lr*0.48, 0, 0, Math.PI*2); X.fill();
 
-  // ---------- alien static aura around the standing figure ----------
+  // ---------- alien static aura around the figure ----------
   const auraI  = bright ? 1.0 : (aware ? 0.6 : 0.28);
   const moteN  = 20 + (aware ? 12 : 0);
   const auraCY = sy - HEIGHT*0.55;
@@ -4389,91 +4389,121 @@ function drawGrabbyTop(g, cam){
     if (fl < 0.35) continue;
     const ang = (i / moteN) * Math.PI*2 + t*0.6;
     const rad = lr*0.9 + _seedRand(i*3)*lr*1.1 + Math.sin(t*8+i)*3;
-    const mx = sx + Math.cos(ang)*rad;
-    const my = auraCY + Math.sin(ang)*rad*1.5;
     X.fillStyle = aware
       ? `rgba(255,${40+i%30},30,${0.10*auraI*fl})`
       : `rgba(120,140,160,${0.07*auraI*fl})`;
-    X.fillRect(mx, my, 2, 2);
+    X.fillRect(sx + Math.cos(ang)*rad, auraCY + Math.sin(ang)*rad*1.5, 2, 2);
   }
 
   X.save();
-  X.translate(sx, sy);                  // origin at the feet
-  X.lineCap = 'round';
-  X.lineJoin = 'round';
+  X.translate(sx, sy);                   // origin at the feet
+  X.lineCap = 'round'; X.lineJoin = 'round';
 
-  // ---------- thin tapering body column ----------
-  const sh = spine(0.82), hip = spine(0.32), feet = spine(0.04);
-  X.fillStyle = BODY;
+  const hip = spine(0.40), shP = spine(0.76);
+  const shX = shP.x, shY = shP.y;
+
+  // ---------- powerful digitigrade legs ----------
+  X.strokeStyle = SKIN;
+  for (const side of [-1, 1]){
+    const lift = Math.sin(g.walk*0.7 + (side>0?Math.PI:0)) * lr*0.06;
+    const hx = hip.x + side*lr*0.16, hy = hip.y;
+    const kx = side*lr*0.34, ky = -HEIGHT*0.26 + lift;   // knee forward
+    const ax = side*lr*0.30, ay = -lr*0.42 + lift;       // ankle back (digitigrade)
+    const fx = side*lr*0.42, fy = -lr*0.02;              // foot forward
+    X.lineWidth = lr*0.36; X.beginPath(); X.moveTo(hx,hy); X.lineTo(kx,ky); X.stroke();
+    X.lineWidth = lr*0.30; X.beginPath(); X.moveTo(kx,ky); X.lineTo(ax,ay); X.stroke();
+    X.lineWidth = lr*0.24; X.beginPath(); X.moveTo(ax,ay); X.lineTo(fx,fy); X.stroke();
+    X.strokeStyle = SKIN_LO; X.lineWidth = lr*0.05;        // foot claws
+    for (let c=-1;c<=1;c++){ X.beginPath(); X.moveTo(fx,fy); X.lineTo(fx + side*lr*0.18 + c*lr*0.06, fy + lr*0.10); X.stroke(); }
+    X.strokeStyle = SKIN;
+  }
+
+  // ---------- hunched armored torso ----------
+  X.fillStyle = SKIN;
   X.beginPath();
-  X.moveTo(feet.x - lr*0.10, feet.y);
-  X.bezierCurveTo(hip.x - lr*0.22, hip.y, sh.x - lr*0.34, sh.y + lr*0.2, sh.x - lr*0.30, sh.y - lr*0.10);
-  X.lineTo(sh.x + lr*0.30, sh.y - lr*0.10);
-  X.bezierCurveTo(sh.x + lr*0.34, sh.y + lr*0.2, hip.x + lr*0.22, hip.y, feet.x + lr*0.10, feet.y);
+  X.moveTo(hip.x - lr*0.34, hip.y);
+  X.bezierCurveTo(hip.x - lr*0.5, lerp(hip.y,shY,0.5), shX - lr*0.62, shY + lr*0.1, shX - lr*0.52, shY - lr*0.06);
+  X.bezierCurveTo(shX - lr*0.2, shY - lr*0.18, shX + lr*0.2, shY - lr*0.18, shX + lr*0.52, shY - lr*0.06);
+  X.bezierCurveTo(shX + lr*0.62, shY + lr*0.1, hip.x + lr*0.5, lerp(hip.y,shY,0.5), hip.x + lr*0.34, hip.y);
   X.closePath(); X.fill();
-  // cold rim sheen down one flank
-  X.strokeStyle = 'rgba(90,120,150,0.16)'; X.lineWidth = lr*0.05;
-  X.beginPath();
-  X.moveTo(sh.x - lr*0.26, sh.y);
-  X.bezierCurveTo(hip.x - lr*0.16, hip.y, feet.x - lr*0.04, feet.y, feet.x - lr*0.02, feet.y);
-  X.stroke();
-
-  // ---------- the curtain of long dangling tendril-arms ----------
-  // originate at the shoulders, hang down and splay outward to the
-  // ground, writhing. Drawn over the body so they drape in front.
-  const shoulder = spine(0.80);
-  const NT = 11;
-  for (let i = 0; i < NT; i++){
-    const u  = (i/(NT-1))*2 - 1;                  // -1..1 across shoulders
-    const ox = shoulder.x + u*headR*1.6;
-    const oy = shoulder.y + Math.abs(u)*lr*0.16;
-    const tipSpread = u*lr*(1.6 + 0.5*reach);
-    const dropLen   = HEIGHT*(0.74 + 0.14*reach);
-    const ph   = i*1.3;
-    const segs = 5;
-    let px = ox, py = oy;
-    for (let s = 1; s <= segs; s++){
-      const f   = s/segs;
-      const wob = Math.sin(t*2.2 + ph + f*3) * lr*0.16 * f * (aware ? 1.5 : 1);
-      const nx  = ox + tipSpread*f*f + wob + leanX*lr*0.45*reach*f;
-      const ny  = oy + dropLen*f;
-      X.strokeStyle = BODY; X.lineWidth = lr*0.15*(1 - f*0.7);
-      X.beginPath(); X.moveTo(px, py); X.lineTo(nx, ny); X.stroke();
-      px = nx; py = ny;
-    }
-    X.fillStyle = BODY;
-    X.beginPath(); X.arc(px, py, lr*0.045, 0, Math.PI*2); X.fill();
+  // armored ridge highlights across the back
+  X.strokeStyle = SKIN_HI; X.lineWidth = lr*0.05;
+  for (let r=0;r<3;r++){
+    const a = spine(0.5 + r*0.12);
+    X.beginPath();
+    X.moveTo(a.x - lr*(0.40-r*0.05), a.y);
+    X.quadraticCurveTo(a.x, a.y - lr*0.10, a.x + lr*(0.40-r*0.05), a.y);
+    X.stroke();
   }
+  // dark central seam
+  X.strokeStyle = SKIN_LO; X.lineWidth = lr*0.06;
+  X.beginPath(); X.moveTo(hip.x, hip.y - lr*0.1); X.lineTo(shX, shY); X.stroke();
 
-  // ---------- neck + smooth bulbous head, bowed forward ----------
-  const neck = spine(0.86), head = spine(1.0);
-  X.strokeStyle = BODY; X.lineWidth = lr*0.32;
-  X.beginPath(); X.moveTo(neck.x, neck.y); X.lineTo(head.x, head.y + headR*0.7); X.stroke();
+  // ---------- long reaching arms with claws ----------
+  function arm(side){
+    const sX = shX + side*lr*0.5, sY = shY + lr*0.02;
+    const eX = sX + side*lr*0.18 + leanX*lr*0.5*reach, eY = shY + HEIGHT*0.30;
+    const wX = eX + leanX*lr*0.7*reach + side*lr*0.04, wY = eY + HEIGHT*0.30*reach;
+    X.strokeStyle = SKIN; X.lineWidth = lr*0.26;
+    X.beginPath(); X.moveTo(sX,sY); X.lineTo(eX,eY); X.stroke();
+    X.lineWidth = lr*0.20;
+    X.beginPath(); X.moveTo(eX,eY); X.lineTo(wX,wY); X.stroke();
+    X.fillStyle = SKIN; X.beginPath(); X.arc(eX,eY,lr*0.14,0,Math.PI*2); X.fill(); // elbow
+    const baseA = Math.atan2(wY-eY, wX-eX);              // clawed hand
+    for (let f=-1;f<=2;f++){
+      const fa = baseA + f*0.26 + Math.sin(t*3+f+side)*0.05;
+      const fl_ = lr*(0.7 + 0.1*reach);
+      const m1x = wX + Math.cos(fa)*fl_*0.5, m1y = wY + Math.sin(fa)*fl_*0.5;
+      const tpx = wX + Math.cos(fa)*fl_,     tpy = wY + Math.sin(fa)*fl_;
+      X.strokeStyle = SKIN;    X.lineWidth = lr*0.07; X.beginPath(); X.moveTo(wX,wY); X.lineTo(m1x,m1y); X.stroke();
+      X.strokeStyle = SKIN_LO; X.lineWidth = lr*0.045; X.beginPath(); X.moveTo(m1x,m1y); X.lineTo(tpx,tpy); X.stroke();
+    }
+  }
+  arm(-1); arm(1);
+
+  // ---------- the blooming head: bony petals + raw sensory membrane ----------
+  const head = spine(1.0);
+  const hX = head.x, hY = head.y + headR*0.15;
+  X.strokeStyle = SKIN; X.lineWidth = lr*0.30;            // neck
+  X.beginPath(); X.moveTo(shX, shY); X.lineTo(hX, hY + headR*0.5); X.stroke();
 
   X.save();
-  X.translate(head.x, head.y + headR*0.2);
-  X.rotate(leanX*0.25);                          // bow toward the prey
-  // smooth dark egg-head
-  X.fillStyle = '#0a0d12';
-  X.beginPath(); X.ellipse(0, 0, headR*0.82, headR*1.12, 0, 0, Math.PI*2); X.fill();
-  // cold sheen on the crown (featureless, smooth)
-  const hg = X.createRadialGradient(-headR*0.25, -headR*0.45, 0, 0, 0, headR*1.25);
-  hg.addColorStop(0, 'rgba(125,145,170,0.50)');
-  hg.addColorStop(0.5, 'rgba(40,52,66,0.22)');
-  hg.addColorStop(1, 'rgba(10,13,18,0)');
-  X.fillStyle = hg;
-  X.beginPath(); X.ellipse(0, 0, headR*0.82, headR*1.12, 0, 0, Math.PI*2); X.fill();
-  // faint sunken eyes — only a hint, brighter when aware (keeps the menace)
-  if (aware || bright){
-    const glowA = bright ? 0.6 : 0.3;
-    const eyeR  = headR*0.12;
-    for (const ex of [-headR*0.28, headR*0.28]){
-      const ey = headR*0.14;
-      X.fillStyle = `rgba(255,40,28,${glowA})`;
-      X.beginPath(); X.arc(ex, ey, eyeR*2.2, 0, Math.PI*2); X.fill();
-      X.fillStyle = bright ? '#ff5038' : '#c01c10';
-      X.beginPath(); X.arc(ex, ey, eyeR, 0, Math.PI*2); X.fill();
-    }
+  X.translate(hX, hY);
+  // membrane glow when fully open
+  if (bright){
+    X.save(); X.globalCompositeOperation = 'lighter';
+    const gg = X.createRadialGradient(0,0,0,0,0,headR*1.3);
+    gg.addColorStop(0,'rgba(255,90,110,0.5)'); gg.addColorStop(1,'rgba(255,90,110,0)');
+    X.fillStyle = gg; X.beginPath(); X.arc(0,0,headR*1.3,0,Math.PI*2); X.fill();
+    X.restore();
+  }
+  // raw sensory membrane (shows through the open petals)
+  const mg = X.createRadialGradient(-headR*0.15,-headR*0.15,headR*0.05, 0,0, headR*0.8);
+  mg.addColorStop(0,'#e07f8a'); mg.addColorStop(0.5,'#a83a4a'); mg.addColorStop(1,'#4a1018');
+  X.fillStyle = mg; X.beginPath(); X.arc(0,0,headR*0.72,0,Math.PI*2); X.fill();
+  X.strokeStyle = 'rgba(40,8,14,0.6)'; X.lineWidth = lr*0.04;   // folds
+  for (let r=0;r<5;r++){ const a = r/5*Math.PI*2;
+    X.beginPath(); X.moveTo(0,0);
+    X.quadraticCurveTo(Math.cos(a+0.4)*headR*0.4, Math.sin(a+0.4)*headR*0.4, Math.cos(a)*headR*0.66, Math.sin(a)*headR*0.66);
+    X.stroke();
+  }
+  // bony petals radiating, pivoting open with openK
+  const N = 6;
+  for (let i=0;i<N;i++){
+    X.save(); X.rotate(i/N*Math.PI*2 + t*0.05);
+    const baseR = headR*(0.10 + openK*0.42);
+    const tipR  = headR*(1.02 + openK*0.34);
+    const halfW = headR*(0.42 - openK*0.10);
+    X.beginPath();
+    X.moveTo(baseR, -halfW*0.45);
+    X.quadraticCurveTo(tipR*0.62, -halfW, tipR, 0);
+    X.quadraticCurveTo(tipR*0.62,  halfW, baseR,  halfW*0.45);
+    X.closePath();
+    X.fillStyle = SKIN; X.fill();
+    X.strokeStyle = SKIN_HI; X.lineWidth = lr*0.04; X.stroke();   // bony rim
+    X.strokeStyle = SKIN_LO; X.lineWidth = lr*0.03;               // crease
+    X.beginPath(); X.moveTo(baseR, 0); X.lineTo(tipR*0.9, 0); X.stroke();
+    X.restore();
   }
   X.restore();
 
@@ -4481,13 +4511,9 @@ function drawGrabbyTop(g, cam){
 
   // ---------- windup tell ring on the ground ----------
   if (windup){
-    const p = g.stateT / 0.45;
-    const rr = g.radius + 4 + p*16;
-    X.strokeStyle = `rgba(255,40,40,${0.8 - p*0.5})`;
-    X.lineWidth = 3;
-    X.beginPath();
-    X.ellipse(sx, sy + lr*0.16, rr, rr*0.42, 0, 0, Math.PI*2);
-    X.stroke();
+    const p = g.stateT / 0.45, rr = g.radius + 4 + p*16;
+    X.strokeStyle = `rgba(255,40,40,${0.8 - p*0.5})`; X.lineWidth = 3;
+    X.beginPath(); X.ellipse(sx, sy + lr*0.16, rr, rr*0.42, 0, 0, Math.PI*2); X.stroke();
   }
 }
 
