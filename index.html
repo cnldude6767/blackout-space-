@@ -8,7 +8,7 @@
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body {
     width:100%; height:100%;
-    background:#020308;
+    background:#000;
     overflow:hidden;
     font-family:'Courier New', monospace;
     display:flex; align-items:center; justify-content:center;
@@ -17,6 +17,9 @@
     position:relative;
     width:min(96vw, 1280px);
     aspect-ratio: 4 / 3;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 0 120px rgba(40,110,170,0.18);
   }
   canvas {
     width:100%; height:100%;
@@ -24,16 +27,57 @@
     background:#020308;
     image-rendering:pixelated;
     border:1px solid #14202c;
-    box-shadow:0 0 60px rgba(40,90,140,0.12), inset 0 0 120px rgba(0,0,0,0.6);
+    box-shadow:0 0 70px rgba(40,110,170,0.16), inset 0 0 120px rgba(0,0,0,0.6);
     cursor:crosshair;
+    animation: crtFlicker 6s infinite;
   }
-  #vignette {
+  /* shared overlay base */
+  #scan, #mask, #roll, #vignette {
     position:absolute; inset:0; pointer-events:none;
-    box-shadow: inset 0 0 200px rgba(0,0,0,0.85);
   }
+  /* horizontal CRT scanlines */
   #scan {
-    position:absolute; inset:0; pointer-events:none; opacity:0.10;
-    background:repeating-linear-gradient(0deg, rgba(120,180,220,0.08) 0px, rgba(120,180,220,0.08) 1px, transparent 2px, transparent 4px);
+    opacity:0.13;
+    background:repeating-linear-gradient(0deg,
+      rgba(120,180,220,0.10) 0px, rgba(120,180,220,0.10) 1px,
+      transparent 2px, transparent 4px);
+    mix-blend-mode:multiply;
+  }
+  /* vertical RGB aperture-grille phosphor mask */
+  #mask {
+    opacity:0.16;
+    background:repeating-linear-gradient(90deg,
+      rgba(255,40,60,0.16) 0px, rgba(255,40,60,0.16) 1px,
+      rgba(40,255,90,0.16) 1px, rgba(40,255,90,0.16) 2px,
+      rgba(60,90,255,0.16) 2px, rgba(60,90,255,0.16) 3px);
+    mix-blend-mode:screen;
+  }
+  /* slow rolling refresh band */
+  #roll {
+    height:26%;
+    inset:0 0 auto 0;
+    background:linear-gradient(0deg,
+      transparent 0%, rgba(150,210,255,0.05) 42%,
+      rgba(190,228,255,0.10) 50%, rgba(150,210,255,0.05) 58%, transparent 100%);
+    mix-blend-mode:screen;
+    animation: crtRoll 9s linear infinite;
+  }
+  /* corner darkening + curvature */
+  #vignette {
+    box-shadow: inset 0 0 200px rgba(0,0,0,0.85);
+    background: radial-gradient(ellipse at center, transparent 52%, rgba(0,0,0,0.5) 100%);
+    border-radius:16px;
+  }
+  @keyframes crtRoll {
+    0%   { transform: translateY(-110%); }
+    100% { transform: translateY(500%); }
+  }
+  @keyframes crtFlicker {
+    0%,92%,100% { opacity:1; }
+    93%  { opacity:0.96; }
+    94%  { opacity:1; }
+    97%  { opacity:0.97; }
+    98%  { opacity:1; }
   }
 </style>
 </head>
@@ -41,6 +85,8 @@
 <div id="wrap">
   <canvas id="game" width="960" height="720"></canvas>
   <div id="scan"></div>
+  <div id="mask"></div>
+  <div id="roll"></div>
   <div id="vignette"></div>
 </div>
 <script>
@@ -255,27 +301,79 @@ function makeStars(n){
   const s = [];
   for (let i=0;i<n;i++){
     const r = Math.random();
+    const depth = Math.random();             // 0 = far/dim, 1 = near/bright
     s.push({
       x: Math.random()*W,
       y: Math.random()*H,
-      s: 1 + Math.random()*2,
+      s: 1 + depth*2.2,
       tw: Math.random()*Math.PI*2,
-      sp: 6 + Math.random()*40,
+      tsp: 1.6 + Math.random()*3.4,          // per-star twinkle speed
+      sp: 6 + depth*40,                      // parallax tied to depth
       col: r<0.82 ? COL.star1 : (r<0.92 ? COL.star2 : COL.star3),
+      bright: depth > 0.86,                  // brightest ~14% get a glow
     });
   }
   return s;
 }
 function drawStars(stars, t, scroll){
+  X.save();
   for (const st of stars){
-    const a = 0.45 + Math.sin(t*3 + st.tw)*0.4;
-    X.globalAlpha = clamp(a,0,1);
-    X.fillStyle = st.col;
+    const a = clamp(0.4 + Math.sin(t*st.tsp + st.tw)*0.45, 0, 1);
     let sx = st.x;
     if (scroll) { sx = (st.x - scroll*st.sp/40) % W; if (sx<0) sx+=W; }
+    if (st.bright){
+      const cx = sx + st.s/2, cy = st.y + st.s/2, gr2 = st.s*3.4;
+      const g = X.createRadialGradient(cx, cy, 0, cx, cy, gr2);
+      g.addColorStop(0, st.col);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      X.globalCompositeOperation = 'lighter';
+      X.globalAlpha = a*0.5;
+      X.fillStyle = g;
+      X.fillRect(cx-gr2, cy-gr2, gr2*2, gr2*2);
+      X.globalCompositeOperation = 'source-over';
+    }
+    X.globalAlpha = a;
+    X.fillStyle = st.col;
     X.fillRect(sx, st.y, st.s, st.s);
   }
   X.globalAlpha = 1;
+  X.restore();
+}
+
+/* shared: occasional shooting stars for space backdrops */
+const METEORS = { list:[], timer: rand(1.5,4) };
+function drawMeteors(dt){
+  METEORS.timer -= dt;
+  if (METEORS.timer <= 0){
+    METEORS.timer = rand(2.6, 6.5);
+    const fromLeft = Math.random() < 0.5;
+    METEORS.list.push({
+      x: fromLeft ? rand(0, W*0.35) : rand(W*0.65, W),
+      y: rand(0, H*0.4),
+      vx: (fromLeft?1:-1)*rand(300,440),
+      vy: rand(150,250),
+      life: 0, max: rand(0.7,1.15),
+    });
+  }
+  X.save();
+  X.globalCompositeOperation = 'lighter';
+  X.lineCap = 'round';
+  for (let i=METEORS.list.length-1; i>=0; i--){
+    const m = METEORS.list[i];
+    m.life += dt;
+    if (m.life >= m.max){ METEORS.list.splice(i,1); continue; }
+    m.x += m.vx*dt; m.y += m.vy*dt;
+    const k = Math.sin(Math.PI * (m.life/m.max));   // fade in then out
+    const tx = m.x - m.vx*0.12, ty = m.y - m.vy*0.12;
+    const g = X.createLinearGradient(m.x, m.y, tx, ty);
+    g.addColorStop(0, `rgba(205,232,255,${0.9*k})`);
+    g.addColorStop(1, 'rgba(205,232,255,0)');
+    X.strokeStyle = g; X.lineWidth = 2;
+    X.beginPath(); X.moveTo(m.x,m.y); X.lineTo(tx,ty); X.stroke();
+    X.fillStyle = `rgba(235,247,255,${k})`;
+    X.fillRect(m.x-1, m.y-1, 2.5, 2.5);
+  }
+  X.restore();
 }
 
 /* shared: draw the escape ship (matches DUNES ending silhouette) */
@@ -283,13 +381,17 @@ function drawShip(cx, cy, scale, t){
   X.save();
   X.translate(cx, cy);
   X.scale(scale, scale);
-  // engine glow
+  // engine glow (additive bloom)
   const flick = 0.7 + Math.sin(t*22)*0.3;
-  const eg = X.createRadialGradient(0, 46, 0, 0, 46, 40);
-  eg.addColorStop(0, `rgba(120,210,255,${0.55*flick})`);
-  eg.addColorStop(1, 'rgba(120,210,255,0)');
+  X.save();
+  X.globalCompositeOperation = 'lighter';
+  const eg = X.createRadialGradient(0, 48, 0, 0, 48, 48);
+  eg.addColorStop(0, `rgba(200,238,255,${0.7*flick})`);
+  eg.addColorStop(0.4, `rgba(110,200,255,${0.4*flick})`);
+  eg.addColorStop(1, 'rgba(70,150,255,0)');
   X.fillStyle = eg;
-  X.fillRect(-40, 24, 80, 70);
+  X.fillRect(-48, 22, 96, 84);
+  X.restore();
   // hull body
   X.fillStyle = COL.hullHi;
   X.beginPath();
@@ -328,15 +430,23 @@ function drawTitle(dt){
   sky.addColorStop(1,'#0a1230');
   X.fillStyle = sky; X.fillRect(0,0,W,H);
   drawStars(TITLE.stars, TITLE.t);
+  drawMeteors(dt);
 
-  // distant nebula
-  for (let i=0;i<4;i++){
-    const nx = W*(0.2+i*0.2), ny = H*(0.32+Math.sin(i*1.6+TITLE.t*0.1)*0.12);
-    const ng = X.createRadialGradient(nx,ny,0,nx,ny,200);
-    ng.addColorStop(0, `rgba(${60+i*20},${90+i*10},${160-i*15},0.16)`);
+  // distant nebula (layered, additive for soft bloom)
+  X.save();
+  X.globalCompositeOperation = 'lighter';
+  for (let i=0;i<5;i++){
+    const nx = W*(0.16+i*0.18) + Math.sin(i*2.1+TITLE.t*0.05)*30;
+    const ny = H*(0.30+Math.sin(i*1.6+TITLE.t*0.1)*0.14);
+    const rad = 180 + i*40;
+    const pulse = 0.12 + Math.sin(TITLE.t*0.3 + i)*0.04;
+    const ng = X.createRadialGradient(nx,ny,0,nx,ny,rad);
+    ng.addColorStop(0, `rgba(${60+i*22},${90+i*8},${175-i*16},${pulse})`);
+    ng.addColorStop(0.5, `rgba(${40+i*16},${70+i*6},${140-i*12},${pulse*0.5})`);
     ng.addColorStop(1,'rgba(0,0,0,0)');
-    X.fillStyle = ng; X.fillRect(nx-220,ny-220,440,440);
+    X.fillStyle = ng; X.fillRect(nx-rad-20,ny-rad-20,rad*2+40,rad*2+40);
   }
+  X.restore();
 
   // drifting ship
   const sy = H*0.56 + Math.sin(TITLE.t*0.6)*14;
@@ -396,6 +506,7 @@ function drawRecap(dt){
   RECAP.t += dt;
   X.fillStyle = '#01020a'; X.fillRect(0,0,W,H);
   drawStars(RECAP.stars, RECAP.t);
+  drawMeteors(dt);
   // shrinking desert planet, lower left (continuity with DUNES ending)
   const pr = Math.max(60, 150 - RECAP.t*6);
   const px = W*0.16 + RECAP.t*5, py = H*0.82 + RECAP.t*4;
@@ -4597,6 +4708,7 @@ function drawEnding(dt){
   sky.addColorStop(0,'#02030a'); sky.addColorStop(0.6,'#06081a'); sky.addColorStop(1,'#101830');
   X.fillStyle=sky; X.fillRect(0,0,W,H);
   drawStars(END.stars, END.t);
+  drawMeteors(dt);
   const pr = Math.min(300, 120+END.t*22);
   const py = H+220 - Math.min(200, END.t*26);
   const pg=X.createRadialGradient(W*0.5-pr*0.3, py-pr*0.3, pr*0.2, W*0.5, py, pr);
