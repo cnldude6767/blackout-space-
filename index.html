@@ -4345,180 +4345,148 @@ function drawPlayerTop(p, cam){
   X.restore();
 }
 
-// ---- alien Slenderman, top-down ----
-// Tall/slender creature seen from above: a narrow dark spindle of a
-// body, a small pale-grey head at the FRONT (no mouth, two red eyes),
-// long slender arms with long writhing fingers reaching toward the
-// prey, and thin tucked legs at the rear. A faint static aura thickens
-// when it is aware or lunging.
+// ---- the Grabby: tall upright humanoid, billboard-style ----
+// Feet anchored at the world position; a thin tapering body rises with a
+// smooth, featureless bulbous head bowed forward, and a writhing curtain
+// of long tendril-arms hangs down toward the ground. It leans toward the
+// prey and reaches further on a lunge. A faint static aura thickens when
+// it is aware. Drawn as a screen-upright billboard (not rotated to facing)
+// so it always looms front-on, like the reference silhouette.
 function drawGrabbyTop(g, cam){
   const sx = g.x - cam.x, sy = g.y - cam.y;
-  if (sx < -240 || sx > W+240 || sy < -240 || sy > H+240) return;
+  if (sx < -260 || sx > W+260 || sy < -360 || sy > H+260) return;
 
   const lunge  = (g.state === 'lunge');
   const windup = (g.state === 'windup');
-  const reach  = lunge ? 1.5 : (windup ? 1.14 : 1.0);
+  const reach  = lunge ? 1.32 : (windup ? 1.12 : 1.0);
   const lr = g.radius;
   const t  = TROPHY.t;
   const aware  = g.knowsPlayer || g.losMemoryT > 0 || windup || lunge;
   const bright = (windup || lunge || g.flashT > 0);
 
-  // ---------- elongated shadow ----------
-  X.save();
-  X.translate(sx, sy);
-  X.rotate(g.facing);
+  const BODY   = '#04060a';            // near-black, cold
+  const HEIGHT = lr*3.8;               // feet -> crown
+  const headR  = lr*0.60;
+  const leanX  = clamp(Math.cos(g.facing), -1, 1);   // horizontal lean to prey
+  const sway   = Math.sin(t*1.1 + g.walk*0.25) * lr*0.10;
+  const topX   = leanX*lr*0.55*reach + sway;
+
+  // central spine: p in 0..1 (0 = feet, 1 = crown)
+  const spine = (p) => ({ x: topX*p*p, y: -HEIGHT*reach*p });
+
+  // ---------- ground shadow at the feet ----------
   X.fillStyle = 'rgba(0,0,0,0.5)';
   X.beginPath();
-  X.ellipse(lr*0.55*reach, 0, lr*1.7*reach, lr*0.6, 0, 0, Math.PI*2);
+  X.ellipse(sx, sy + lr*0.16, lr*1.45, lr*0.46, 0, 0, Math.PI*2);
   X.fill();
-  X.restore();
 
-  // ---------- alien static aura (horror) ----------
-  // ring of flickering motes; denser/redder when aware. Drawn in
-  // screen space (un-rotated) so it shimmers around the whole figure.
-  const auraI = bright ? 1.0 : (aware ? 0.6 : 0.28);
-  const moteN = 18 + (aware ? 10 : 0);
+  // ---------- alien static aura around the standing figure ----------
+  const auraI  = bright ? 1.0 : (aware ? 0.6 : 0.28);
+  const moteN  = 20 + (aware ? 12 : 0);
+  const auraCY = sy - HEIGHT*0.55;
   for (let i = 0; i < moteN; i++){
     const fl = _seedRand(i*7 + Math.floor(t*22) % 9);
     if (fl < 0.35) continue;
     const ang = (i / moteN) * Math.PI*2 + t*0.6;
-    const rad = lr*1.3 + _seedRand(i*3)*lr*1.4 + Math.sin(t*8+i)*3;
+    const rad = lr*0.9 + _seedRand(i*3)*lr*1.1 + Math.sin(t*8+i)*3;
     const mx = sx + Math.cos(ang)*rad;
-    const my = sy + Math.sin(ang)*rad*0.9;
+    const my = auraCY + Math.sin(ang)*rad*1.5;
     X.fillStyle = aware
-      ? `rgba(255,${40+i%30},${30},${0.10*auraI*fl})`
+      ? `rgba(255,${40+i%30},30,${0.10*auraI*fl})`
       : `rgba(120,140,160,${0.07*auraI*fl})`;
     X.fillRect(mx, my, 2, 2);
   }
 
   X.save();
-  X.translate(sx, sy);
-  X.rotate(g.facing);
-
-  const BODY = '#04060a';     // near-black, cold
+  X.translate(sx, sy);                  // origin at the feet
   X.lineCap = 'round';
   X.lineJoin = 'round';
 
-  // ---------- thin tucked legs (rear) ----------
-  // two short slender legs angling back, close together — keeps it
-  // from reading like a frog.
-  X.strokeStyle = BODY; X.lineWidth = lr*0.11;
-  for (const side of [-1, 1]){
-    const lift = Math.sin(g.walk*0.8 + (side>0?Math.PI:0)) * lr*0.10;
-    X.beginPath();
-    X.moveTo(-lr*0.55, side*lr*0.10);
-    X.lineTo(-lr*1.05, side*lr*0.30 + lift);
-    X.lineTo(-lr*1.45, side*lr*0.22 + lift);
-    X.stroke();
-  }
-
-  // ---------- long slender arms with long fingers ----------
-  // Two pairs of arms ("two sets of arms" from the lore), reaching
-  // FORWARD past the head toward the prey. Long, thin, multi-jointed,
-  // writhing. The strength of the reach scales with the lunge.
-  // Each arm reaches along an absolute angle (relative to the facing
-  // direction) so the four limbs splay into a clear grasping fan
-  // instead of collapsing onto one another.
-  function slenderArm(rootX, rootY, ang, len, phase, thick){
-    const wob = (aware ? 0.12 : 0.06) * lr;
-    const ex = rootX + Math.cos(ang)*len*0.45;
-    const ey = rootY + Math.sin(ang)*len*0.45 + Math.sin(t*2.0+phase)*wob;
-    const wx = rootX + Math.cos(ang)*len*0.82;
-    const wy = rootY + Math.sin(ang)*len*0.82 + Math.sin(t*2.6+phase)*wob;
-    // upper arm
-    X.strokeStyle = BODY; X.lineWidth = lr*thick;
-    X.beginPath(); X.moveTo(rootX, rootY); X.lineTo(ex, ey); X.stroke();
-    // forearm (thinner)
-    X.lineWidth = lr*thick*0.65;
-    X.beginPath(); X.moveTo(ex, ey); X.lineTo(wx, wy); X.stroke();
-    // bony elbow
-    X.fillStyle = BODY;
-    X.beginPath(); X.arc(ex, ey, lr*thick*0.55, 0, Math.PI*2); X.fill();
-    // long fingers fanning out from the wrist (writhing)
-    const baseAng = Math.atan2(wy-ey, wx-ex);
-    for (let f = 0; f < 4; f++){
-      const tt = (f - 1.5) / 1.5;
-      const fAng = baseAng + tt*0.34 + Math.sin(t*3+phase+f)*0.06;
-      const fLen = len*0.52 * (0.88 + (1-Math.abs(tt))*0.22);
-      const j1x = wx + Math.cos(fAng)*fLen*0.45;
-      const j1y = wy + Math.sin(fAng)*fLen*0.45;
-      const j2x = wx + Math.cos(fAng)*fLen*0.78;
-      const j2y = wy + Math.sin(fAng)*fLen*0.78;
-      const txp = wx + Math.cos(fAng)*fLen;
-      const typ = wy + Math.sin(fAng)*fLen;
-      X.lineWidth = lr*0.05;
-      X.beginPath(); X.moveTo(wx, wy); X.lineTo(j1x, j1y); X.stroke();
-      X.lineWidth = lr*0.038;
-      X.beginPath(); X.moveTo(j1x, j1y); X.lineTo(j2x, j2y); X.stroke();
-      X.lineWidth = lr*0.026;
-      X.beginPath(); X.moveTo(j2x, j2y); X.lineTo(txp, typ); X.stroke();
-    }
-  }
-
-  const armLen = lr*2.0 * reach;
-  // four long arms fanning forward and outward (two sets) — grasping
-  slenderArm( lr*0.12, -lr*0.16, -0.98, armLen*0.9, 1.7, 0.085); // lower-left (wide)
-  slenderArm( lr*0.12,  lr*0.16,  0.98, armLen*0.9, 4.3, 0.085); // lower-right (wide)
-  slenderArm( lr*0.30, -lr*0.12, -0.50, armLen,     0.0, 0.10);  // upper-left
-  slenderArm( lr*0.30,  lr*0.12,  0.50, armLen,     3.0, 0.10);  // upper-right
-
-  // ---------- slender body spindle ----------
-  // narrow, tapering from a thin rear point to the shoulders.
+  // ---------- thin tapering body column ----------
+  const sh = spine(0.82), hip = spine(0.32), feet = spine(0.04);
   X.fillStyle = BODY;
   X.beginPath();
-  X.moveTo(-lr*1.05, 0);
-  X.bezierCurveTo(-lr*0.6, -lr*0.12, -lr*0.1, -lr*0.16, lr*0.40, -lr*0.14);
-  X.bezierCurveTo(lr*0.54, -lr*0.10, lr*0.54, lr*0.10, lr*0.40, lr*0.14);
-  X.bezierCurveTo(-lr*0.1, lr*0.16, -lr*0.6, lr*0.12, -lr*1.05, 0);
+  X.moveTo(feet.x - lr*0.10, feet.y);
+  X.bezierCurveTo(hip.x - lr*0.22, hip.y, sh.x - lr*0.34, sh.y + lr*0.2, sh.x - lr*0.30, sh.y - lr*0.10);
+  X.lineTo(sh.x + lr*0.30, sh.y - lr*0.10);
+  X.bezierCurveTo(sh.x + lr*0.34, sh.y + lr*0.2, hip.x + lr*0.22, hip.y, feet.x + lr*0.10, feet.y);
   X.closePath(); X.fill();
-  // cold rim sheen along one flank (subtle alien gloss)
-  X.strokeStyle = 'rgba(90,120,150,0.18)'; X.lineWidth = lr*0.05;
+  // cold rim sheen down one flank
+  X.strokeStyle = 'rgba(90,120,150,0.16)'; X.lineWidth = lr*0.05;
   X.beginPath();
-  X.moveTo(-lr*0.6, -lr*0.14);
-  X.bezierCurveTo(-lr*0.1, -lr*0.21, lr*0.2, -lr*0.20, lr*0.40, -lr*0.16);
+  X.moveTo(sh.x - lr*0.26, sh.y);
+  X.bezierCurveTo(hip.x - lr*0.16, hip.y, feet.x - lr*0.04, feet.y, feet.x - lr*0.02, feet.y);
   X.stroke();
 
-  // ---------- narrow neck ----------
-  X.strokeStyle = BODY; X.lineWidth = lr*0.20;
-  X.beginPath(); X.moveTo(lr*0.42, 0); X.lineTo(lr*0.72, 0); X.stroke();
-
-  // ---------- small pale head at the front (no mouth) ----------
-  const headX = lr*0.92;
-  // faint pale-grey skull, distinct from the black body
-  X.fillStyle = '#13161c';
-  X.beginPath(); X.ellipse(headX, 0, lr*0.24, lr*0.20, 0, 0, Math.PI*2); X.fill();
-  X.fillStyle = '#272b34';
-  X.beginPath(); X.ellipse(headX+lr*0.03, 0, lr*0.17, lr*0.14, 0, 0, Math.PI*2); X.fill();
-
-  // ---------- two red eyes (no mouth) ----------
-  const eyeColor = bright ? '#ff4030' : (aware ? '#e02418' : '#a01810');
-  const glowA    = bright ? 0.7 : (aware ? 0.45 : 0.25);
-  const eyeR     = bright ? lr*0.075 : lr*0.06;
-  const ex = headX + lr*0.07;
-  for (const ey of [-lr*0.085, lr*0.085]){
-    X.fillStyle = `rgba(255,40,28,${glowA})`;
-    X.beginPath(); X.arc(ex, ey, eyeR*2.4, 0, Math.PI*2); X.fill();
-    X.fillStyle = eyeColor;
-    X.beginPath(); X.arc(ex, ey, eyeR, 0, Math.PI*2); X.fill();
-    X.fillStyle = bright ? '#ffd0c0' : '#ff8870';
-    X.beginPath(); X.arc(ex+eyeR*0.3, ey-eyeR*0.2, eyeR*0.4, 0, Math.PI*2); X.fill();
+  // ---------- the curtain of long dangling tendril-arms ----------
+  // originate at the shoulders, hang down and splay outward to the
+  // ground, writhing. Drawn over the body so they drape in front.
+  const shoulder = spine(0.80);
+  const NT = 11;
+  for (let i = 0; i < NT; i++){
+    const u  = (i/(NT-1))*2 - 1;                  // -1..1 across shoulders
+    const ox = shoulder.x + u*headR*1.6;
+    const oy = shoulder.y + Math.abs(u)*lr*0.16;
+    const tipSpread = u*lr*(1.6 + 0.5*reach);
+    const dropLen   = HEIGHT*(0.74 + 0.14*reach);
+    const ph   = i*1.3;
+    const segs = 5;
+    let px = ox, py = oy;
+    for (let s = 1; s <= segs; s++){
+      const f   = s/segs;
+      const wob = Math.sin(t*2.2 + ph + f*3) * lr*0.16 * f * (aware ? 1.5 : 1);
+      const nx  = ox + tipSpread*f*f + wob + leanX*lr*0.45*reach*f;
+      const ny  = oy + dropLen*f;
+      X.strokeStyle = BODY; X.lineWidth = lr*0.15*(1 - f*0.7);
+      X.beginPath(); X.moveTo(px, py); X.lineTo(nx, ny); X.stroke();
+      px = nx; py = ny;
+    }
+    X.fillStyle = BODY;
+    X.beginPath(); X.arc(px, py, lr*0.045, 0, Math.PI*2); X.fill();
   }
 
-  // occasional alien glitch band across the body when aware
-  if (aware && (Math.floor(t*12)%5)===0){
-    X.fillStyle = 'rgba(255,40,30,0.10)';
-    X.fillRect(-lr*1.0, -lr*0.06 + Math.sin(t*30)*lr*0.1, lr*2.0, lr*0.05);
+  // ---------- neck + smooth bulbous head, bowed forward ----------
+  const neck = spine(0.86), head = spine(1.0);
+  X.strokeStyle = BODY; X.lineWidth = lr*0.32;
+  X.beginPath(); X.moveTo(neck.x, neck.y); X.lineTo(head.x, head.y + headR*0.7); X.stroke();
+
+  X.save();
+  X.translate(head.x, head.y + headR*0.2);
+  X.rotate(leanX*0.25);                          // bow toward the prey
+  // smooth dark egg-head
+  X.fillStyle = '#0a0d12';
+  X.beginPath(); X.ellipse(0, 0, headR*0.82, headR*1.12, 0, 0, Math.PI*2); X.fill();
+  // cold sheen on the crown (featureless, smooth)
+  const hg = X.createRadialGradient(-headR*0.25, -headR*0.45, 0, 0, 0, headR*1.25);
+  hg.addColorStop(0, 'rgba(125,145,170,0.50)');
+  hg.addColorStop(0.5, 'rgba(40,52,66,0.22)');
+  hg.addColorStop(1, 'rgba(10,13,18,0)');
+  X.fillStyle = hg;
+  X.beginPath(); X.ellipse(0, 0, headR*0.82, headR*1.12, 0, 0, Math.PI*2); X.fill();
+  // faint sunken eyes — only a hint, brighter when aware (keeps the menace)
+  if (aware || bright){
+    const glowA = bright ? 0.6 : 0.3;
+    const eyeR  = headR*0.12;
+    for (const ex of [-headR*0.28, headR*0.28]){
+      const ey = headR*0.14;
+      X.fillStyle = `rgba(255,40,28,${glowA})`;
+      X.beginPath(); X.arc(ex, ey, eyeR*2.2, 0, Math.PI*2); X.fill();
+      X.fillStyle = bright ? '#ff5038' : '#c01c10';
+      X.beginPath(); X.arc(ex, ey, eyeR, 0, Math.PI*2); X.fill();
+    }
   }
+  X.restore();
 
   X.restore();
 
-  // ---------- windup tell ring ----------
+  // ---------- windup tell ring on the ground ----------
   if (windup){
     const p = g.stateT / 0.45;
+    const rr = g.radius + 4 + p*16;
     X.strokeStyle = `rgba(255,40,40,${0.8 - p*0.5})`;
     X.lineWidth = 3;
     X.beginPath();
-    X.arc(sx, sy, g.radius + 4 + p*16, 0, Math.PI*2);
+    X.ellipse(sx, sy + lr*0.16, rr, rr*0.42, 0, 0, Math.PI*2);
     X.stroke();
   }
 }
