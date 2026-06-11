@@ -347,19 +347,46 @@ body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 r
   .spot-date{margin-top:0;margin-left:auto}
 }
 
-/* ═══ REDUCED MOTION ════════════════════════════════════════
-   Honors prefers-reduced-motion: strips the ambient/decorative
-   motion (aurora, ticker, orbit, gradient roam, twinkle, etc.)
-   while keeping the layout and content fully intact. ───────── */
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{
-    animation-duration:.001ms!important;animation-iteration-count:1!important;
-    transition-duration:.001ms!important;scroll-behavior:auto!important}
-  html{scroll-behavior:auto}
-  .reveal{opacity:1!important;transform:none!important}
-  .ticker-track{animation:none!important;transform:none!important;white-space:normal;flex-wrap:wrap;gap:8px}
-  .atmo-stars span{opacity:.4!important}
-}
+/* ═══ EXTRA POLISH ══════════════════════════════════════════ */
+/* gradient scroll-progress bar */
+#scrollbar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--grad);z-index:10000;
+  box-shadow:0 0 14px rgba(155,92,255,.75);pointer-events:none}
+
+/* soft aurora glow that follows the cursor */
+#aura{position:fixed;width:560px;height:560px;border-radius:50%;pointer-events:none;z-index:1;
+  background:radial-gradient(circle,rgba(155,92,255,.08),rgba(48,118,255,.045) 45%,transparent 70%);
+  mix-blend-mode:screen;transform:translate(-50%,-50%);opacity:0;transition:opacity .5s}
+
+/* shooting comets across the upper atmosphere */
+.comet{position:absolute;width:130px;height:1.5px;border-radius:99px;opacity:0;
+  background:linear-gradient(90deg,rgba(255,255,255,.95),rgba(155,92,255,.4) 60%,transparent);
+  box-shadow:0 0 8px rgba(255,255,255,.4);transform:rotate(-22deg);
+  animation:comet-fly 8s linear infinite}
+@keyframes comet-fly{
+  0%{opacity:0;transform:rotate(-22deg) translateX(0)}
+  3%{opacity:.9}
+  11%{opacity:0;transform:rotate(-22deg) translateX(52vw)}
+  100%{opacity:0;transform:rotate(-22deg) translateX(52vw)}}
+
+/* shimmer sweep across the primary CTA on hover */
+.btn-primary::after{content:'';position:absolute;inset:0;border-radius:12px;pointer-events:none;
+  background:linear-gradient(115deg,transparent 32%,rgba(255,255,255,.38) 50%,transparent 68%);
+  background-size:250% 100%;background-position:130% 0;transition:background-position .65s var(--ease)}
+.btn-primary:hover::after{background-position:-30% 0}
+
+/* gradient section numbers */
+.sec-no{background:var(--grad-cool);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;opacity:.85}
+
+/* leading market unit gets a golden halo row */
+.mu-row.lead{background:linear-gradient(110deg,rgba(255,178,62,.10),transparent 72%);
+  border-radius:12px;margin:0 -8px;padding-left:12px;padding-right:12px;
+  box-shadow:inset 0 0 0 1px rgba(255,178,62,.14)}
+
+/* prompt-vault cards: gradient hairline rises on hover */
+.pv-card{position:relative}
+.pv-card::after{content:'';position:absolute;left:14px;right:14px;top:0;height:2px;border-radius:2px;
+  background:var(--grad);opacity:0;transform:scaleX(.4);transition:opacity .3s,transform .35s var(--ease)}
+.pv-card:hover::after{opacity:.9;transform:scaleX(1)}
 </style>
 </head>
 <body>
@@ -371,7 +398,11 @@ body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 r
   <div class="atmo-grid"></div>
   <div class="atmo-noise"></div>
   <div class="atmo-stars" id="stars"></div>
+  <span class="comet" style="top:11%;left:-6%;animation-delay:1.4s"></span>
+  <span class="comet" style="top:30%;left:14%;animation-delay:5.2s;animation-duration:10s"></span>
 </div>
+<div id="scrollbar" aria-hidden="true"></div>
+<div id="aura" aria-hidden="true"></div>
 <div id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
 
 <!-- ── TIP TICKER ── -->
@@ -615,9 +646,6 @@ const CONFIG = {
   },
 };
 
-// Honor the OS-level "reduce motion" setting throughout the page.
-const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
 // Market units — codes, full names, brand colors for the Cup
 const MARKET_UNITS = [
   { code:'LAMU',    name:'Los Angeles MU',        color:'#3076FF' },
@@ -834,13 +862,11 @@ $('cup-reset').textContent='Monthly · all units reset on the 1st';
 // ticker (duplicated for seamless loop)
 (function(){
   const seq=TIPS.map(t=>`<span class="tick-item"><span class="tick-pill" aria-hidden="true">✦ TIP</span>${t}</span>`).join('');
-  // With reduced motion the track doesn't scroll, so one copy is enough.
-  $('ticker-track').innerHTML=REDUCED_MOTION ? seq : seq+seq;
+  $('ticker-track').innerHTML=seq+seq;
 })();
 
-// stars (skipped entirely when reduced motion is requested)
+// stars
 (function(){
-  if(REDUCED_MOTION) return;
   const wrap=$('stars');
   for(let i=0;i<26;i++){
     const s=document.createElement('span');
@@ -852,13 +878,24 @@ $('cup-reset').textContent='Monthly · all units reset on the 1st';
   }
 })();
 
+// gradient scroll-progress bar + cursor aura glow
+(function(){
+  const bar=$('scrollbar'), aura=$('aura'), h=document.documentElement;
+  addEventListener('scroll',()=>{
+    bar.style.width=(h.scrollTop/Math.max(h.scrollHeight-h.clientHeight,1)*100)+'%';
+  },{passive:true});
+  addEventListener('mousemove',e=>{
+    aura.style.opacity=1;
+    aura.style.left=e.clientX+'px'; aura.style.top=e.clientY+'px';
+  },{passive:true});
+})();
+
 // scroll reveal
 const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
 
-// animated count-up (respects reduced motion — jumps straight to the value)
+// animated count-up
 function countUp(el,target,ms=1200){
-  if(REDUCED_MOTION){el.textContent=Math.round(target).toLocaleString();return}
   const t0=performance.now();
   (function step(now){
     const p=Math.min((now-t0)/ms,1), e=1-Math.pow(1-p,3);
@@ -967,7 +1004,7 @@ async function loadChampion(){
     const {value}=await callFlow('getLeaderboard',{monthKey:lastMonthKey()});
     if(!value||!value.length)return;
     const totals={};
-    value.forEach(r=>{totals[r.MarketUnit]=(totals[r.MarketUnit]||0)+(r.XPValue||0)});
+    value.forEach(r=>{totals[r.MarketUnit]=(totals[r.MarketUnit]||0)+(Number(r.XPValue)||0)});
     const [code,xp]=Object.entries(totals).sort((a,b)=>b[1]-a[1])[0]||[];
     if(!code||!xp)return;
     const mu=MARKET_UNITS.find(m=>m.code===code)||{name:code};
@@ -1063,7 +1100,7 @@ async function markDone(id,btn){
   const me=getIdentity();
   if(!me){
     toast('Join the Cup first — add your name and market unit above ☝️','info');
-    $('identity-bar').scrollIntoView({behavior:REDUCED_MOTION?'auto':'smooth',block:'center'});
+    $('identity-bar').scrollIntoView({behavior:'smooth',block:'center'});
     const nf=$('id-name'); if(nf) nf.focus();
     return;
   }
@@ -1094,7 +1131,7 @@ function setDone(btn,ch,animate){
   const card=btn.closest('[data-ch]');
   if(card)card.classList.add('is-done');
   btn.textContent='✓ Done this month'; btn.disabled=true; btn.classList.add('done');
-  if(animate&&card&&!REDUCED_MOTION){
+  if(animate&&card){
     const pop=document.createElement('span');
     pop.className='xp-pop'; pop.textContent=`+${ch.xp}`;
     card.appendChild(pop); setTimeout(()=>pop.remove(),1800);
@@ -1120,7 +1157,9 @@ async function loadLeaderboard(){
     const totals={}; MARKET_UNITS.forEach(m=>totals[m.code]=0);
     let total=0;
     value.forEach(r=>{
-      const mu=r.MarketUnit; const xp=r.XPValue||0; total+=xp;
+      // SharePoint/Power Automate often returns XPValue as TEXT — coerce to a
+      // real number or `+=` silently concatenates ("75"+"50" → "7550").
+      const mu=r.MarketUnit; const xp=Number(r.XPValue)||0; total+=xp;
       if(mu in totals)totals[mu]+=xp; else totals[mu]=(totals[mu]||0)+xp;
     });
     countUp($('stat-xp'),total);
@@ -1131,7 +1170,7 @@ async function loadLeaderboard(){
       const mu=MARKET_UNITS.find(m=>m.code===code)||{name:code,color:'#9B5CFF'};
       const pct=Math.round((xp/max)*100);
       return`
-        <div class="mu-row">
+        <div class="mu-row ${i===0&&xp>0?'lead':''}">
           <div class="mu-rank ${i===0?'r1':''}">${medals[i]??(i+1)}</div>
           <div class="mu-chip" style="background:${mu.color}" aria-hidden="true">${esc(code)}</div>
           <div class="mu-info">
@@ -1141,13 +1180,9 @@ async function loadLeaderboard(){
           <div class="mu-xp">${xp.toLocaleString()}</div>
         </div>`;
     }).join('');
-    if(REDUCED_MOTION){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
       el.querySelectorAll('.mu-fill').forEach(f=>f.style.width=f.dataset.w+'%');
-    }else{
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        el.querySelectorAll('.mu-fill').forEach(f=>f.style.width=f.dataset.w+'%');
-      }));
-    }
+    }));
   }catch(e){
     el.innerHTML='<p style="padding:1rem;font-size:12px;color:var(--ink3);text-align:center">Standings unavailable</p>';
   }
@@ -1158,7 +1193,6 @@ async function loadLeaderboard(){
 // ═══════════════════════════════════════════════════════════════
 const CONFETTI_COLORS=['#25D0F4','#3076FF','#9B5CFF','#E14DF2','#FF6A3D','#FFB23E'];
 function confettiBurst(n=60){
-  if(REDUCED_MOTION) return;   // skip celebratory motion when not wanted
   for(let i=0;i<n;i++){
     const c=document.createElement('div');
     c.className='confetti';
@@ -1203,16 +1237,11 @@ function confettiBurst(n=60){
     clicks++; clearTimeout(timer); timer=setTimeout(()=>clicks=0,1600);
     if(clicks>=5){
       clicks=0; trailing=!trailing;
-      if(trailing&&REDUCED_MOTION){
-        trailing=false;
-        toast('Sparkle trail is disabled while reduced-motion is on ✦','info');
-        return;
-      }
       toast(trailing?'✨ Sparkle trail engaged':'Sparkle trail off','info');
     }
   });
   document.addEventListener('mousemove',e=>{
-    if(!trailing||REDUCED_MOTION||Math.random()>.35)return;
+    if(!trailing||Math.random()>.35)return;
     const s=document.createElement('span');
     s.className='sparkle'; s.textContent='✦';
     s.style.left=(e.clientX+(Math.random()*16-8))+'px';
@@ -1227,7 +1256,6 @@ function confettiBurst(n=60){
 (function(){
   let buf='', fizzTimer=null;
   function bubbleUp(){
-    if(REDUCED_MOTION) return;
     const b=document.createElement('div');
     b.className='bubble';
     const size=4+Math.random()*12;
@@ -1242,10 +1270,8 @@ function confettiBurst(n=60){
     document.body.classList.toggle('icecold',on);
     clearInterval(fizzTimer); fizzTimer=null;
     if(on){
-      if(!REDUCED_MOTION){
-        for(let i=0;i<24;i++)setTimeout(bubbleUp,i*90);   // opening pour
-        fizzTimer=setInterval(bubbleUp,420);               // steady carbonation
-      }
+      for(let i=0;i<24;i++)setTimeout(bubbleUp,i*90);   // opening pour
+      fizzTimer=setInterval(bubbleUp,420);               // steady carbonation
       toast('🥤 ICE COLD MODE — est. 1886. Stay refreshed.','gold');
     }else{
       toast('Back to room temperature. ✦','info');
