@@ -1,0 +1,8 @@
+# Local preview/build artifacts
+cc-preview.png
+*.preview.png
+
+# Node tooling (used only for local headless screenshots)
+node_modules/
+package.json
+package-lock.json
