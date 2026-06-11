@@ -1,5 +1,6 @@
-# Local preview/build artifacts
+# Local preview/build artifacts (headless-render screenshots)
 cc-preview.png
+cc-*.png
 *.preview.png
 
 # Node tooling (used only for local headless screenshots)
