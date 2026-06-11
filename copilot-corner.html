@@ -335,6 +335,47 @@ body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 r
 .champ-text{font-size:13px;color:var(--ink2)}
 .champ-text b{font-family:var(--display);color:var(--amber);font-weight:700}
 
+/* ═══ PAST GUEST POSTS (spotlight archive) ══════════════════ */
+.spot-past{margin-top:1rem}
+.spot-past-btn{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);background:none;border:1px solid var(--line2);border-radius:99px;padding:7px 15px;cursor:pointer;transition:color .2s,border-color .2s;display:none;align-items:center;gap:7px}
+.spot-past-btn:hover{color:var(--ink);border-color:rgba(155,92,255,.45)}
+.spot-past-list{display:none;margin-top:1rem;flex-direction:column;gap:11px}
+.spot-past-list.open{display:flex}
+.past-item{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:1rem 1.2rem}
+.past-meta{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+.past-title{font-family:var(--serif);font-style:italic;font-size:1.1rem;margin-bottom:.5rem}
+.past-body{font-size:13.5px;color:var(--ink2);line-height:1.8;white-space:pre-wrap}
+
+/* ═══ ADMIN PANEL ═══════════════════════════════════════════ */
+.admin-link{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4);background:none;border:none;cursor:pointer;margin-top:1rem;transition:color .25s;display:inline-flex;align-items:center;gap:6px}
+.admin-link:hover{color:var(--ink2)}
+.admin-overlay{position:fixed;inset:0;z-index:10002;display:flex;align-items:center;justify-content:center;padding:1.2rem;background:rgba(3,4,9,.72);backdrop-filter:blur(7px);animation:toast-in .25s var(--ease)}
+.admin-overlay[hidden]{display:none}
+.admin-modal{position:relative;width:100%;max-width:560px;max-height:90vh;overflow:auto;background:#0a0b16;border:1px solid var(--line2);border-radius:22px;padding:1.8rem;box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 50px rgba(155,92,255,.18)}
+.admin-x{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:9px;border:1px solid var(--line2);background:transparent;color:var(--ink2);cursor:pointer;font-size:14px;line-height:1;transition:background .2s,color .2s}
+.admin-x:hover{background:rgba(255,255,255,.06);color:var(--ink)}
+.admin-h{font-family:var(--display);font-size:1.4rem;font-weight:700;letter-spacing:-.02em;margin-bottom:.4rem}
+.admin-sub{font-size:13px;color:var(--ink3);margin-bottom:1.1rem;line-height:1.6}
+.admin-input{width:100%;margin-bottom:.9rem}
+.admin-btn{width:100%}
+.admin-lbl{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 0 6px 2px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem}
+.admin-grid .id-field{width:100%}
+.admin-area{width:100%;resize:vertical;line-height:1.7;min-height:130px;font-family:var(--body);margin-bottom:1rem}
+.admin-actions{display:flex;gap:10px;align-items:center;margin-top:.4rem;flex-wrap:wrap}
+.admin-ghost{padding:11px 18px}
+.admin-note{font-size:12px;color:var(--cyan);margin-top:.9rem;min-height:1em;line-height:1.5}
+.admin-toggle-row{display:flex;align-items:center;gap:12px;margin-bottom:1.2rem;padding:.85rem 1rem;border:1px solid var(--line);border-radius:13px;background:var(--panel)}
+.admin-toggle-row span{font-size:13px;color:var(--ink2)}
+.switch{position:relative;display:inline-block;width:46px;height:26px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;cursor:pointer;background:rgba(255,255,255,.12);border:1px solid var(--line2);border-radius:99px;transition:background .25s}
+.slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .25s var(--ease)}
+.switch input:checked+.slider{background:var(--grad)}
+.switch input:checked+.slider::before{transform:translateX(20px)}
+.switch input:focus-visible+.slider{outline:2px solid var(--focus);outline-offset:2px}
+@media (max-width:560px){.admin-grid{grid-template-columns:1fr}}
+
 /* ═══ RESPONSIVE ════════════════════════════════════════════ */
 @media (max-width:880px){
   .hero{grid-template-columns:1fr;align-items:start}
@@ -416,7 +457,7 @@ body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 r
   <div class="notice" role="note">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
     <div>
-      <strong>One-time setup:</strong> Update <code>CONFIG</code> below (session date, Teams link, spotlight fallback). Your Power Automate flow needs actions: <code>getRecordings</code>, <code>getRecaps</code>, <code>getSpotlight</code>, <code>markDone</code>, <code>getProgress</code>, <code>getLeaderboard</code>. The XP list now needs columns: <code>Title</code> (name), <code>MarketUnit</code>, <code>Challenge</code>, <code>XPValue</code>, <code>MonthKey</code> (e.g. "2026-06"). Add a <code>Spotlight</code> list with <code>Title</code>, <code>Author</code>, <code>MarketUnit</code>, <code>Body</code>, <code>PostDate</code>. Then delete this notice.
+      <strong>One-time setup:</strong> Update <code>CONFIG</code> below (session date, Teams link, spotlight fallback). Your Power Automate flow needs actions: <code>getRecordings</code>, <code>getRecaps</code>, <code>getSpotlight</code>, <code>markDone</code>, <code>getProgress</code>, <code>getLeaderboard</code>. The XP list now needs columns: <code>Title</code> (name), <code>MarketUnit</code>, <code>Challenge</code>, <code>XPValue</code>, <code>MonthKey</code> (e.g. "2026-06"). Add a <code>Spotlight</code> list with <code>Title</code>, <code>Author</code>, <code>MarketUnit</code>, <code>Body</code>, <code>PostDate</code>, <code>Enabled</code> (Yes/No). The in-page <strong>Admin</strong> panel (footer · password in <code>CONFIG.adminPassword</code>) edits the spotlight via a <code>setSpotlight</code> flow action. Then delete this notice.
     </div>
   </div>
 
@@ -457,7 +498,7 @@ body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 r
   </div>
 
   <!-- ── 01 · SPOTLIGHT ── -->
-  <section class="section reveal" aria-labelledby="sec-spotlight">
+  <section class="section reveal" id="spotlight-section" aria-labelledby="sec-spotlight">
     <div class="sec-head">
       <span class="sec-no" aria-hidden="true">01</span>
       <h2 class="sec-title" id="sec-spotlight">This week's <span class="it">spotlight</span></h2>
@@ -481,6 +522,10 @@ body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 r
           <a class="spot-cta" id="spot-cta" href="mailto:?subject=I%20want%20to%20be%20a%20Copilot%20Corner%20guest%20poster">Want the mic next week? Pitch us your Copilot story →</a>
         </div>
       </div>
+    </div>
+    <div class="spot-past">
+      <button class="spot-past-btn" id="spot-past-btn" type="button" aria-expanded="false" aria-controls="spot-past-list" onclick="togglePast(this)">View past guest posts</button>
+      <div class="spot-past-list" id="spot-past-list"></div>
     </div>
   </section>
 
@@ -615,7 +660,45 @@ body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 r
         ① old-school gamers know the code &nbsp;·&nbsp; ② the star above rewards persistence (×5) &nbsp;·&nbsp; ③ whisper the year it all began — just type it
       </span>
     </span>
+    <div><button class="admin-link" id="admin-open" type="button"><span aria-hidden="true">⚙</span> Admin</button></div>
   </footer>
+
+  <!-- ── ADMIN OVERLAY (spotlight manager) ── -->
+  <div id="admin-overlay" class="admin-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="admin-title">
+    <div class="admin-modal">
+      <button class="admin-x" id="admin-close" type="button" aria-label="Close admin panel">✕</button>
+
+      <div id="admin-login">
+        <h2 class="admin-h" id="admin-title">Admin access</h2>
+        <p class="admin-sub">Enter the password to manage this week's guest spotlight.</p>
+        <label class="vh" for="admin-pass">Admin password</label>
+        <input class="id-field admin-input" id="admin-pass" type="password" placeholder="Password" autocomplete="off" />
+        <button class="id-join-btn admin-btn" id="admin-enter" type="button">Unlock</button>
+      </div>
+
+      <div id="admin-panel" hidden>
+        <h2 class="admin-h">Guest spotlight</h2>
+        <p class="admin-sub">Edit the post, or switch the whole section off when there's no guest this week.</p>
+        <div class="admin-toggle-row">
+          <label class="switch"><input type="checkbox" id="adm-enabled" /><span class="slider"></span></label>
+          <span id="adm-enabled-label">Spotlight is shown on the page</span>
+        </div>
+        <div class="admin-grid">
+          <div><label class="admin-lbl" for="adm-title">Post title</label><input class="id-field" id="adm-title" type="text" maxlength="120" /></div>
+          <div><label class="admin-lbl" for="adm-author">Author</label><input class="id-field" id="adm-author" type="text" maxlength="60" autocomplete="name" /></div>
+          <div><label class="admin-lbl" for="adm-mu">Market unit</label><input class="id-field" id="adm-mu" type="text" maxlength="40" placeholder="e.g. LAMU" /></div>
+          <div><label class="admin-lbl" for="adm-date">Post date</label><input class="id-field" id="adm-date" type="date" /></div>
+        </div>
+        <label class="admin-lbl" for="adm-body">Post body</label>
+        <textarea class="id-field admin-area" id="adm-body" rows="7" maxlength="2000" placeholder="Paste the guest's story here…"></textarea>
+        <div class="admin-actions">
+          <button class="id-join-btn" id="adm-save" type="button">Save spotlight</button>
+          <button class="btn-ghost admin-ghost" id="adm-logout" type="button">Lock</button>
+        </div>
+        <p class="admin-note" id="adm-note" role="status" aria-live="polite"></p>
+      </div>
+    </div>
+  </div>
 
 </main><!-- /page -->
 
@@ -635,6 +718,10 @@ const CONFIG = {
   promptLibLink:    '',
   spotlightEmail:   '',                       // mailto for "be the next guest"
   totalSessions:    24,
+
+  // Admin panel password (soft gate — visible in page source, so this only
+  // keeps casual users out; it is NOT real security). Set to your name.
+  adminPassword:    'Stephanie',
 
   // Fallback spotlight shown if the flow has no Spotlight rows yet
   spotlightFallback: {
@@ -738,7 +825,10 @@ const TIPS = [
 //  Actions used by this page:
 //    getRecordings        → { value:[{ Title, SessionDate, Duration, TeamsLink }] }
 //    getRecaps            → { value:[{ Title, SessionDate, RecapBody }] }
-//    getSpotlight         → { value:[{ Title, Author, MarketUnit, Body, PostDate }] } (newest first)
+//    getSpotlight         → { value:[{ Title, Author, MarketUnit, Body, PostDate, Enabled }] } (newest first)
+//    setSpotlight         ← { Title, Author, MarketUnit, Body, PostDate, Enabled }
+//                           → creates a NEW item in the Spotlight list; returns { status:"created" }
+//                           (used by the in-page Admin panel; Enabled=false hides the section for everyone)
 //    markDone             ← { userName, marketUnit, challengeId, xpValue, monthKey }
 //                         → { status:"created" } | { status:"duplicate" }
 //    getProgress          ← { userName, monthKey }       → { value:[{ Challenge }] }
@@ -917,12 +1007,125 @@ function renderSpotlight(p){
   $('spot-title').textContent=p.Title||'';
   $('spot-body').textContent=p.Body||'';
 }
+// rows held newest-first; SPOTLIGHT_CURRENT prefills the admin form
+let SPOTLIGHT_ROWS=[], SPOTLIGHT_CURRENT=null;
+
+// Enabled may arrive as bool, "Yes"/"No", 1/0, or be absent (→ treat as on)
+function spotlightEnabled(row){
+  if(!row) return true;
+  const v=row.Enabled;
+  if(v===undefined||v===null||v==='') return true;
+  return !(v===false||v===0||/^(no|false|0|off)$/i.test(String(v)));
+}
+
+function renderPastPosts(rows){
+  const wrap=$('spot-past-list'), btn=$('spot-past-btn');
+  const past=rows.slice(1).filter(r=>r&&r.Title);
+  if(!past.length){btn.style.display='none';wrap.classList.remove('open');btn.setAttribute('aria-expanded','false');return}
+  btn.style.display='inline-flex';
+  btn.textContent=`View ${past.length} past guest post${past.length>1?'s':''}`;
+  wrap.innerHTML=past.map(r=>`
+    <div class="past-item">
+      <div class="past-meta">${esc(r.Author||'Guest')}${r.MarketUnit?(' · '+esc(r.MarketUnit)):''}${r.PostDate?(' · '+esc(fmt(r.PostDate,{month:'short',day:'numeric',year:'numeric'}))):''}</div>
+      <div class="past-title">${esc(r.Title)}</div>
+      <div class="past-body">${esc(r.Body||'')}</div>
+    </div>`).join('');
+}
+function togglePast(btn){
+  const l=$('spot-past-list'), open=l.classList.toggle('open');
+  btn.setAttribute('aria-expanded',open?'true':'false');
+}
+
 async function loadSpotlight(){
+  let rows=[];
   try{
     const {value}=await callFlow('getSpotlight');
-    renderSpotlight(value&&value.length?value[0]:CONFIG.spotlightFallback);
-  }catch(e){renderSpotlight(CONFIG.spotlightFallback)}
+    if(value&&value.length) rows=value;
+  }catch(e){/* fall through to local / fallback */}
+  // The flow (SharePoint) is the shared source of truth and always wins when
+  // it returns data. The local draft is only a fallback for when the
+  // "setSpotlight" flow action isn't built yet, so a single admin can still
+  // preview edits on their own browser.
+  if(!rows.length){
+    let draft=null; try{draft=JSON.parse(localStorage.getItem('cc-spotlight-draft'))}catch{}
+    if(draft) rows=[draft];
+  }
+  if(!rows.length) rows=[CONFIG.spotlightFallback];
+  SPOTLIGHT_ROWS=rows; SPOTLIGHT_CURRENT=rows[0];
+  const on=spotlightEnabled(rows[0]);
+  $('spotlight-section').style.display=on?'':'none';
+  if(on){ renderSpotlight(rows[0]); renderPastPosts(rows); }
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  ADMIN PANEL — soft-gated editor for the weekly guest spotlight.
+//  Saves a new row to the SharePoint Spotlight list via "setSpotlight";
+//  if that flow action isn't built yet it falls back to this browser so
+//  you can preview, and tells you so.
+// ═══════════════════════════════════════════════════════════════
+function adminOpen(){
+  const o=$('admin-overlay');
+  o.hidden=false; $('admin-login').hidden=false; $('admin-panel').hidden=true;
+  $('admin-pass').value=''; setTimeout(()=>$('admin-pass').focus(),40);
+}
+function adminClose(){ $('admin-overlay').hidden=true; $('admin-pass').value=''; }
+function admEnabledLabel(on){ $('adm-enabled-label').textContent=on?'Spotlight is shown on the page':'Spotlight is hidden from the page'; }
+function admDate(d){ try{const x=new Date(d); return isNaN(x)?'':x.toISOString().slice(0,10)}catch{return ''} }
+
+function adminUnlock(){
+  if($('admin-pass').value!==CONFIG.adminPassword){ toast('Incorrect password','error'); return; }
+  $('admin-login').hidden=true; $('admin-panel').hidden=false;
+  const c=SPOTLIGHT_CURRENT||CONFIG.spotlightFallback;
+  $('adm-title').value=c.Title||''; $('adm-author').value=c.Author||'';
+  $('adm-mu').value=c.MarketUnit||''; $('adm-body').value=c.Body||'';
+  $('adm-date').value=admDate(c.PostDate);
+  const on=spotlightEnabled(c); $('adm-enabled').checked=on; admEnabledLabel(on);
+  $('adm-note').textContent='';
+}
+
+async function adminSave(){
+  const on=$('adm-enabled').checked;
+  const payload={
+    Title:$('adm-title').value.trim(), Author:$('adm-author').value.trim(),
+    MarketUnit:$('adm-mu').value.trim(), Body:$('adm-body').value.trim(),
+    PostDate:$('adm-date').value||new Date().toISOString().slice(0,10), Enabled:on,
+  };
+  if(on && !payload.Body){ toast('Add the post text first (or switch the spotlight off)','error'); $('adm-body').focus(); return; }
+  const btn=$('adm-save'), label=btn.textContent; btn.disabled=true; btn.textContent='Saving…';
+  let remote=false;
+  try{ await callFlow('setSpotlight',payload); remote=true; }catch(e){/* action not wired yet */}
+  // When the flow saved it, that list is the source of truth — drop the local
+  // copy so everyone (incl. you) reads the canonical version. Otherwise keep
+  // the local draft so you still see your change on this browser.
+  try{ remote ? localStorage.removeItem('cc-spotlight-draft')
+              : localStorage.setItem('cc-spotlight-draft',JSON.stringify(payload)); }catch{}
+  btn.disabled=false; btn.textContent=label;
+  $('adm-note').textContent = remote
+    ? '✓ Saved to SharePoint — everyone will see this.'
+    : '✓ Saved on this browser only. Add a “setSpotlight” action to your flow to share it with everyone.';
+  toast(remote?'Spotlight saved for everyone ✦':'Saved locally (flow not wired yet)', remote?'success':'info');
+  // Optimistically reflect the change right away (covers SharePoint
+  // read-after-write lag), then reconcile against the flow.
+  SPOTLIGHT_CURRENT=payload; SPOTLIGHT_ROWS=[payload,...SPOTLIGHT_ROWS.filter(r=>r!==SPOTLIGHT_CURRENT)];
+  $('spotlight-section').style.display=on?'':'none';
+  if(on){ renderSpotlight(payload); renderPastPosts(SPOTLIGHT_ROWS); }
+  await loadSpotlight();
+}
+
+(function(){
+  const on=(id,ev,fn)=>{const el=$(id);if(el)el.addEventListener(ev,fn)};
+  on('admin-open','click',adminOpen);
+  on('admin-close','click',adminClose);
+  on('admin-enter','click',adminUnlock);
+  on('admin-pass','keydown',e=>{if(e.key==='Enter')adminUnlock()});
+  on('adm-save','click',adminSave);
+  on('adm-logout','click',adminClose);
+  on('adm-enabled','change',e=>admEnabledLabel(e.target.checked));
+  const ov=$('admin-overlay');
+  if(ov) ov.addEventListener('click',e=>{if(e.target===ov)adminClose()});
+  window.addEventListener('keydown',e=>{if(e.key==='Escape'&&ov&&!ov.hidden)adminClose()});
+  if(location.hash==='#admin') adminOpen();
+})();
 
 // ═══════════════════════════════════════════════════════════════
 //  PROMPT VAULT — filterable, copy-ready, community-credited.
