@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Copilot Corner</title>
+<meta name="description" content="The HR team's home for everything Microsoft Copilot — session recordings, recaps, the monthly Market Unit Cup, a field-tested prompt vault, and a rotating guest spotlight." />
+<meta name="color-scheme" content="dark" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Instrument+Sans:ital,wght@0,400..700;1,400..700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+<style>
+/* ═══ COPILOT CORNER · DESIGN SYSTEM ════════════════════════ */
+:root{
+  --cyan:#25D0F4; --blue:#3076FF; --violet:#9B5CFF; --pink:#E14DF2; --coral:#FF6A3D; --amber:#FFB23E;
+  --grad: linear-gradient(110deg,#25D0F4 0%,#3076FF 24%,#9B5CFF 50%,#E14DF2 74%,#FF6A3D 100%);
+  --grad-cool: linear-gradient(120deg,#25D0F4,#3076FF 55%,#9B5CFF);
+  --grad-warm: linear-gradient(120deg,#9B5CFF,#E14DF2 55%,#FF6A3D);
+
+  --bg:#05060c; --panel:rgba(255,255,255,.028); --panel2:rgba(255,255,255,.055);
+  /* ink2/3/4 raised vs. original for WCAG AA legibility on the near-black bg */
+  --ink:#F4F4FB; --ink2:rgba(244,244,251,.72); --ink3:rgba(244,244,251,.54); --ink4:rgba(244,244,251,.34);
+  --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+  --focus:#C9A6FF;
+
+  --display:'Bricolage Grotesque',system-ui,sans-serif;
+  --body:'Instrument Sans',system-ui,sans-serif;
+  --serif:'Instrument Serif',Georgia,serif;
+  --mono:'JetBrains Mono',monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15.5px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+::selection{background:rgba(155,92,255,.4)}
+
+/* ── tabular figures so counters/timers/scores don't jitter ── */
+.cd-n,.mu-xp,.stat-n,.ch-xp,.session-date,.pv-app{font-variant-numeric:tabular-nums}
+
+/* ── keyboard focus: one consistent, visible ring everywhere ── */
+:where(a,button,input,select,[tabindex],[role="button"]):focus-visible{
+  outline:2px solid var(--focus);outline-offset:2px;border-radius:8px}
+
+/* ── skip link for keyboard / screen-reader users ── */
+.skip-link{position:fixed;left:14px;top:-60px;z-index:10001;background:var(--grad);color:#fff;
+  padding:10px 16px;border-radius:10px;font-family:var(--body);font-size:13px;font-weight:600;
+  text-decoration:none;box-shadow:0 8px 28px rgba(0,0,0,.5);transition:top .2s var(--ease)}
+.skip-link:focus{top:14px}
+
+/* ── visually hidden (available to screen readers) ── */
+.vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ═══ ATMOSPHERE ════════════════════════════════════════════ */
+.atmo{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.aurora{position:absolute;width:140vw;height:60vh;top:-30vh;left:-20vw;
+  background:
+    radial-gradient(ellipse 38% 55% at 22% 60%, rgba(48,118,255,.16), transparent 70%),
+    radial-gradient(ellipse 34% 50% at 52% 40%, rgba(155,92,255,.13), transparent 70%),
+    radial-gradient(ellipse 30% 45% at 80% 55%, rgba(225,77,242,.10), transparent 70%);
+  filter:blur(40px);
+  animation:aurora-sway 16s ease-in-out infinite alternate}
+@keyframes aurora-sway{from{transform:translateX(-3%) skewX(-2deg)}to{transform:translateX(3%) skewX(2deg)}}
+.atmo-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(155,92,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(155,92,255,.035) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 90%);
+  mask-image:radial-gradient(ellipse 90% 60% at 50% 0%,#000 30%,transparent 90%)}
+.atmo-noise{position:absolute;inset:0;opacity:.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.atmo-stars span{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:0;animation:twinkle 5s linear infinite}
+@keyframes twinkle{0%,100%{opacity:0}50%{opacity:.7}}
+
+/* sparkle trail (easter egg) */
+.sparkle{position:fixed;z-index:9998;pointer-events:none;font-size:11px;animation:sp-fade 0.9s ease forwards}
+@keyframes sp-fade{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-22px) scale(.4)}}
+
+/* ═══ TICKER ════════════════════════════════════════════════ */
+.ticker{position:relative;z-index:2;border-bottom:1px solid var(--line);background:rgba(5,6,12,.7);backdrop-filter:blur(8px);overflow:hidden;height:46px;display:flex;align-items:center}
+.ticker::before,.ticker::after{content:'';position:absolute;top:0;bottom:0;width:80px;z-index:2;pointer-events:none}
+.ticker::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.ticker::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
+.ticker-track{display:flex;gap:0;white-space:nowrap;animation:ticker-scroll 48s linear infinite;will-change:transform}
+.ticker:hover .ticker-track,.ticker:focus-within .ticker-track{animation-play-state:paused}
+@keyframes ticker-scroll{to{transform:translateX(-50%)}}
+.tick-item{display:inline-flex;align-items:center;gap:11px;padding:0 34px;font-family:var(--body);font-size:13.5px;font-weight:500;letter-spacing:.005em;color:var(--ink2)}
+.tick-item b{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:700}
+.tick-pill{display:inline-flex;align-items:center;font-family:var(--display);font-size:9.5px;font-weight:700;letter-spacing:.16em;padding:3px 10px;border-radius:99px;background:var(--grad);color:#fff;flex-shrink:0;box-shadow:0 0 12px rgba(155,92,255,.35)}
+
+/* ═══ LAYOUT ════════════════════════════════════════════════ */
+.page{position:relative;z-index:1;max-width:1020px;margin:0 auto;padding:0 1.6rem 6rem}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.section{scroll-margin-top:1.5rem}
+
+/* ═══ HERO ══════════════════════════════════════════════════ */
+.hero{padding:4.2rem 0 3rem;display:grid;grid-template-columns:1.4fr .9fr;gap:3rem;align-items:end}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);margin-bottom:1.2rem}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--grad);box-shadow:0 0 10px rgba(37,208,244,.8);animation:pulse 2.4s ease infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(.6);opacity:.45}}
+h1.title{font-family:var(--display);font-size:clamp(3rem,7.5vw,5.2rem);font-weight:750;line-height:.96;letter-spacing:-.035em;font-variation-settings:'opsz' 96}
+h1 .gw{display:inline-block;background:var(--grad);background-size:220% 220%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:gradient-roam 7s ease infinite}
+@keyframes gradient-roam{0%,100%{background-position:0% 40%}50%{background-position:100% 60%}}
+h1 .serif-it{font-family:var(--serif);font-style:italic;font-weight:400;letter-spacing:-.01em}
+.hero-sub{margin-top:1.3rem;font-size:15.5px;color:var(--ink2);max-width:430px;font-weight:400;line-height:1.7}
+.hero-sub em{font-family:var(--serif);font-style:italic;color:var(--ink);font-size:1.07em}
+.hero-ctas{margin-top:1.8rem;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.btn-primary{position:relative;display:inline-flex;align-items:center;gap:9px;padding:13px 26px;border:none;border-radius:12px;background:var(--grad);background-size:200% 200%;color:#fff;font-family:var(--body);font-size:14px;font-weight:600;letter-spacing:.01em;text-decoration:none;cursor:pointer;box-shadow:0 0 30px rgba(155,92,255,.35),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .25s var(--ease),box-shadow .25s;animation:gradient-roam 6s ease infinite}
+.btn-primary:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 6px 44px rgba(155,92,255,.55),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:12px;border:1px solid var(--line2);color:var(--ink2);font-size:13.5px;font-weight:500;text-decoration:none;transition:border-color .2s,color .2s,background .2s;cursor:pointer;background:transparent;font-family:var(--body)}
+.btn-ghost:hover{border-color:rgba(155,92,255,.5);color:var(--ink);background:rgba(155,92,255,.07)}
+svg.ic{width:15px;height:15px;flex-shrink:0}
+
+.session-card{position:relative;border-radius:20px;padding:1px;background:linear-gradient(150deg,rgba(37,208,244,.5),rgba(155,92,255,.4) 50%,rgba(255,106,61,.35));overflow:hidden}
+.session-card::before{content:'';position:absolute;inset:-60%;background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,255,255,.5) 78%,transparent 86%);animation:orbit 5s linear infinite}
+@keyframes orbit{to{transform:rotate(360deg)}}
+.session-inner{position:relative;background:#0a0b16;border-radius:19px;padding:1.6rem 1.7rem;z-index:1}
+.session-label{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;background:var(--grad-cool);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.6rem}
+.session-date{font-family:var(--display);font-size:1.7rem;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.session-time{font-size:13px;color:var(--ink2);margin-top:4px}
+.session-count{margin-top:.9rem;display:flex;gap:8px}
+.cd-unit{flex:1;text-align:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 4px}
+.cd-n{font-family:var(--mono);font-size:1.15rem;font-weight:600;color:var(--ink)}
+.cd-l{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-top:1px}
+
+/* ═══ STATS ═════════════════════════════════════════════════ */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--panel);backdrop-filter:blur(12px);margin:0 0 4rem}
+.stat{padding:1.5rem 1.6rem;border-right:1px solid var(--line);position:relative;overflow:hidden}
+.stat:last-child{border-right:none}
+.stat::after{content:'';position:absolute;left:1.6rem;bottom:1.1rem;width:26px;height:2px;background:var(--grad);border-radius:2px;opacity:.7}
+.stat-n{font-family:var(--display);font-size:2.3rem;font-weight:700;letter-spacing:-.03em;line-height:1;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-l{font-size:11.5px;color:var(--ink3);margin-top:7px;letter-spacing:.05em;padding-bottom:14px}
+
+/* ═══ SECTION CHROME ════════════════════════════════════════ */
+.section{margin-bottom:4.5rem}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:1.7rem}
+.sec-no{font-family:var(--mono);font-size:11px;color:var(--ink4);letter-spacing:.1em}
+.sec-title{font-family:var(--display);font-size:1.55rem;font-weight:700;letter-spacing:-.025em}
+.sec-title .it{font-family:var(--serif);font-style:italic;font-weight:400}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+.sec-meta{font-family:var(--mono);font-size:10.5px;color:var(--ink3);letter-spacing:.08em;text-transform:uppercase}
+
+/* ═══ SPOTLIGHT (guest post) ════════════════════════════════ */
+.spotlight{position:relative;border:1px solid var(--line);border-radius:24px;overflow:hidden;background:linear-gradient(160deg,rgba(155,92,255,.07),rgba(5,6,12,0) 45%),var(--panel)}
+.spotlight::before{content:'“';position:absolute;top:-3.2rem;right:1.5rem;font-family:var(--serif);font-size:17rem;line-height:1;color:rgba(155,92,255,.1);pointer-events:none}
+.spot-grid{display:grid;grid-template-columns:200px 1fr;gap:0}
+.spot-side{padding:2rem 1.7rem;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:14px}
+.spot-badge{display:inline-flex;align-items:center;gap:7px;align-self:flex-start;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;padding:5px 11px;border-radius:99px;border:1px solid rgba(255,178,62,.35);color:var(--amber);background:rgba(255,178,62,.07)}
+.spot-avatar{width:64px;height:64px;border-radius:18px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:700;font-size:1.4rem;color:#fff;box-shadow:0 8px 28px rgba(155,92,255,.35)}
+.spot-author{font-family:var(--display);font-weight:700;font-size:1.05rem;letter-spacing:-.01em}
+.spot-mu{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--ink3);text-transform:uppercase;margin-top:2px}
+.spot-date{font-size:11.5px;color:var(--ink4);margin-top:auto}
+.spot-main{padding:2rem 2.3rem;position:relative;z-index:1}
+.spot-title{font-family:var(--serif);font-style:italic;font-size:1.7rem;line-height:1.25;margin-bottom:.9rem;letter-spacing:-.01em;font-weight:400}
+.spot-body{font-size:15px;color:var(--ink2);line-height:1.85;white-space:pre-wrap;max-width:60ch}
+.spot-cta{margin-top:1.5rem;display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--violet);text-decoration:none;font-weight:600;letter-spacing:.02em}
+.spot-cta:hover{text-decoration:underline}
+
+/* ═══ MU CUP ════════════════════════════════════════════════ */
+.cup-layout{display:grid;grid-template-columns:340px 1fr;gap:16px}
+.cup-board{border:1px solid var(--line);border-radius:22px;background:var(--panel);backdrop-filter:blur(12px);overflow:hidden;display:flex;flex-direction:column}
+.cup-head{padding:1.2rem 1.4rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
+.cup-title{font-family:var(--display);font-weight:700;font-size:1rem;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.cup-month{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.cup-body{padding:1rem 1.2rem 1.3rem;flex:1}
+.mu-row{display:flex;align-items:center;gap:12px;padding:9px 4px}
+.mu-rank{font-family:var(--mono);font-size:12px;width:24px;text-align:center;color:var(--ink3);flex-shrink:0}
+.mu-rank.r1{color:var(--amber)}
+.mu-chip{width:38px;height:26px;border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.05em;color:#fff}
+.mu-info{flex:1;min-width:0}
+.mu-name{font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mu-track{height:5px;background:var(--line);border-radius:3px;margin-top:5px;overflow:hidden}
+.mu-fill{height:100%;border-radius:3px;width:0;transition:width 1.1s var(--ease)}
+.mu-xp{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink2);white-space:nowrap}
+.cup-foot{padding:.85rem 1.4rem;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--ink3);text-transform:uppercase;display:flex;justify-content:space-between}
+.cup-foot b{background:var(--grad-warm);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+.challenges{display:flex;flex-direction:column;gap:11px}
+.identity-bar{border:1px dashed rgba(155,92,255,.35);border-radius:16px;padding:1rem 1.3rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:rgba(155,92,255,.04)}
+.identity-bar.joined{border-style:solid;border-color:var(--line)}
+.id-text{font-size:13px;color:var(--ink2);flex:1;min-width:200px}
+.id-text b{color:var(--ink)}
+.id-field{background:rgba(0,0,0,.35);border:1px solid var(--line2);border-radius:10px;padding:9px 13px;color:var(--ink);font-family:var(--body);font-size:13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.id-field:focus{border-color:rgba(155,92,255,.6);box-shadow:0 0 0 3px rgba(155,92,255,.12)}
+select.id-field{appearance:none;cursor:pointer;padding-right:30px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23888' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;background-size:13px}
+select.id-field option{background:#10111e;color:var(--ink)}
+.id-join-btn{padding:9px 18px;border-radius:10px;border:none;background:var(--grad);color:#fff;font-family:var(--body);font-size:13px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .2s}
+.id-join-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(155,92,255,.4)}
+.id-edit{font-size:11.5px;color:var(--ink3);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:var(--body)}
+.id-edit:hover{color:var(--ink2)}
+
+.ch-card{position:relative;border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:1.15rem 1.3rem;display:flex;align-items:center;gap:15px;overflow:hidden;transition:border-color .25s,box-shadow .25s,transform .25s}
+.ch-card:hover{border-color:rgba(155,92,255,.4);box-shadow:0 6px 28px rgba(155,92,255,.12);transform:translateX(3px)}
+.ch-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--grad);opacity:0;transition:opacity .25s}
+.ch-card:hover::before{opacity:1}
+.ch-card.is-done{opacity:.5}
+.ch-card.is-done::before{opacity:1;background:var(--grad-cool)}
+.ch-ic{width:46px;height:46px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:21px;border:1px solid var(--line2)}
+.ch-ic.c1{background:rgba(48,118,255,.13)} .ch-ic.c2{background:rgba(37,208,244,.11)}
+.ch-ic.c3{background:rgba(155,92,255,.13)} .ch-ic.c4{background:rgba(255,106,61,.11)}
+.ch-info{flex:1;min-width:0}
+.ch-name{font-size:14px;font-weight:600;letter-spacing:-.005em}
+.ch-desc{font-size:12.5px;color:var(--ink3);margin-top:3px}
+.ch-side{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.ch-xp{font-family:var(--mono);font-size:11.5px;font-weight:600;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ch-btn{font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid rgba(155,92,255,.35);background:transparent;color:var(--ink2);transition:background .2s,color .2s;white-space:nowrap;min-height:36px}
+.ch-btn:hover:not(:disabled){background:rgba(155,92,255,.16);color:var(--ink)}
+.ch-btn:disabled{cursor:default}
+.ch-btn.done{border-color:rgba(37,208,244,.4);color:var(--cyan);background:rgba(37,208,244,.07)}
+.xp-pop{position:absolute;top:50%;right:18px;transform:translateY(-50%);font-family:var(--mono);font-size:12px;font-weight:600;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:float-up 1.8s ease forwards;pointer-events:none}
+@keyframes float-up{from{opacity:1;transform:translateY(-50%)}to{opacity:0;transform:translateY(-150%)}}
+
+/* ═══ RECORDINGS ════════════════════════════════════════════ */
+.rec-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px}
+.rec-card{border:1px solid var(--line);border-radius:18px;background:var(--panel);overflow:hidden;text-decoration:none;display:block;transition:transform .3s var(--ease),border-color .3s,box-shadow .3s}
+.rec-card:hover{transform:translateY(-4px);border-color:rgba(155,92,255,.45);box-shadow:0 14px 40px rgba(155,92,255,.16)}
+.rec-thumb{height:128px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;background:linear-gradient(135deg,rgba(48,118,255,.16),rgba(225,77,242,.1) 50%,rgba(255,106,61,.12))}
+.rec-thumb::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 90% at 50% 110%,rgba(5,6,12,.7),transparent)}
+.play{width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.07);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:1;transition:transform .25s,background .25s}
+.rec-card:hover .play{transform:scale(1.14);background:rgba(155,92,255,.35)}
+.play svg{width:17px;height:17px;fill:#fff;margin-left:2px}
+.rec-body{padding:1rem 1.2rem}
+.rec-t{font-size:14px;font-weight:600;line-height:1.4;letter-spacing:-.005em}
+.rec-m{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.rec-d{font-size:11.5px;color:var(--ink3)}
+.rec-dur{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;color:var(--ink2);background:rgba(255,255,255,.05);border:1px solid var(--line);padding:2px 9px;border-radius:5px}
+
+/* ═══ RECAPS ════════════════════════════════════════════════ */
+.recaps{border:1px solid var(--line);border-radius:20px;overflow:hidden;background:var(--panel)}
+.recap-row{padding:1.15rem 1.5rem;display:flex;gap:1rem;align-items:flex-start;cursor:pointer;border-bottom:1px solid var(--line);transition:background .15s;width:100%;text-align:left;background:transparent;border-left:none;border-right:none;border-top:none;font:inherit;color:inherit}
+.recap-row:hover{background:var(--panel2)}
+.recap-pip{width:8px;height:8px;border-radius:50%;background:var(--grad);flex-shrink:0;margin-top:8px;box-shadow:0 0 9px rgba(155,92,255,.6)}
+.recap-c{flex:1;min-width:0}
+.recap-t{font-size:14px;font-weight:600}
+.recap-p{font-size:13px;color:var(--ink3);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recap-r{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.recap-d{font-size:11.5px;color:var(--ink3)}
+.read-tag{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.recap-chev{width:14px;height:14px;color:var(--ink3);transition:transform .25s var(--ease);flex-shrink:0;align-self:center}
+.recap-row[aria-expanded="true"] .recap-chev{transform:rotate(180deg)}
+.recap-x{display:none;padding:0 1.5rem 1.2rem 3rem;font-size:13.5px;color:var(--ink2);line-height:1.85;white-space:pre-wrap;border-bottom:1px solid var(--line)}
+.recap-x.open{display:block}
+.recap-row:last-of-type,.recap-x:last-of-type{border-bottom:none}
+
+/* ═══ RESOURCES ═════════════════════════════════════════════ */
+.res-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:11px}
+.res-tile{border:1px solid var(--line);border-radius:16px;background:var(--panel);padding:1.15rem;display:flex;align-items:center;gap:13px;text-decoration:none;transition:border-color .2s,background .2s,transform .2s}
+.res-tile:hover{border-color:rgba(155,92,255,.4);background:var(--panel2);transform:translateY(-2px)}
+.res-ic{width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--panel2);border:1px solid var(--line)}
+.res-ic svg{width:18px;height:18px}
+.res-l{font-size:13.5px;font-weight:600;color:var(--ink)}
+.res-s{font-size:11.5px;color:var(--ink3);margin-top:2px}
+
+/* ═══ FOOTER / SETUP / TOASTS ═══════════════════════════════ */
+.footer{text-align:center;padding-top:2rem;border-top:1px solid var(--line);font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3)}
+.footer .logo-click{cursor:default;user-select:none}
+.notice{background:rgba(37,208,244,.05);border:1px solid rgba(37,208,244,.2);border-radius:16px;padding:1.05rem 1.3rem;margin:1.6rem 0 2.4rem;font-size:13px;color:rgba(37,208,244,.92);line-height:1.7;display:flex;gap:11px}
+.notice svg{width:16px;height:16px;flex-shrink:0;margin-top:3px}
+.notice code{background:rgba(37,208,244,.12);padding:1px 6px;border-radius:4px;font-family:var(--mono);font-size:10.5px}
+.skeleton{background:rgba(255,255,255,.06);border-radius:8px;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.85}}
+.empty{text-align:center;padding:2.5rem;color:var(--ink3);font-size:13px}
+#toasts{position:fixed;bottom:28px;right:28px;z-index:9999;display:flex;flex-direction:column;gap:9px}
+.toast{padding:12px 19px;border-radius:13px;font-size:13.5px;font-weight:500;color:#fff;max-width:320px;box-shadow:0 10px 36px rgba(0,0,0,.45);animation:toast-in .3s var(--ease)}
+.toast.success{background:linear-gradient(130deg,#3076FF,#9B5CFF)}
+.toast.info{background:linear-gradient(130deg,#25D0F4,#3076FF)}
+.toast.error{background:linear-gradient(130deg,#E14DF2,#FF6A3D)}
+.toast.gold{background:linear-gradient(130deg,#FF6A3D,#FFB23E);color:#1a0e00;font-weight:700}
+@keyframes toast-in{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}
+
+/* confetti */
+.confetti{position:fixed;top:-12px;z-index:9997;pointer-events:none;border-radius:2px;animation:confetti-fall linear forwards}
+@keyframes confetti-fall{to{transform:translateY(110vh) rotate(720deg);opacity:.9}}
+
+/* party mode (easter egg) */
+body.party .aurora{animation-duration:4s;filter:blur(30px) saturate(1.6)}
+body.party h1 .gw{animation-duration:1.6s}
+body.party .live-dot{animation-duration:.5s}
+
+/* 🥤 ICE COLD MODE (easter egg · est. 1886) */
+body.icecold{--grad:linear-gradient(110deg,#FF3B30 0%,#E4002B 40%,#FF6A5E 70%,#FFD7CF 100%);
+  --grad-cool:linear-gradient(120deg,#FF6A5E,#E4002B);--grad-warm:linear-gradient(120deg,#E4002B,#FF3B30)}
+body.icecold .aurora{background:
+  radial-gradient(ellipse 38% 55% at 22% 60%,rgba(228,0,43,.22),transparent 70%),
+  radial-gradient(ellipse 34% 50% at 52% 40%,rgba(255,59,48,.16),transparent 70%),
+  radial-gradient(ellipse 30% 45% at 80% 55%,rgba(255,255,255,.06),transparent 70%)}
+body.icecold .atmo-grid{background-image:linear-gradient(rgba(228,0,43,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(228,0,43,.05) 1px,transparent 1px)}
+body.icecold .live-dot{box-shadow:0 0 10px rgba(228,0,43,.9)}
+body.icecold .btn-primary{box-shadow:0 0 30px rgba(228,0,43,.45),inset 0 1px 0 rgba(255,255,255,.25)}
+.bubble{position:fixed;bottom:-22px;z-index:2;pointer-events:none;border-radius:50%;
+  background:radial-gradient(circle at 32% 30%,rgba(255,255,255,.85),rgba(255,255,255,.16) 42%,rgba(255,255,255,.04) 70%);
+  border:1px solid rgba(255,255,255,.22);animation:bubble-rise linear forwards}
+@keyframes bubble-rise{
+  0%{transform:translateY(0) translateX(0);opacity:0}
+  8%{opacity:.85}
+  100%{transform:translateY(-108vh) translateX(var(--sway,18px));opacity:0}}
+
+/* footer secrets hint */
+.secrets{margin-top:.8rem;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--ink4);cursor:help;transition:color .3s}
+.secrets .clues{opacity:0;max-height:0;overflow:hidden;transition:opacity .5s,max-height .5s;display:block;margin-top:6px;line-height:2}
+.secrets:hover{color:var(--ink3)}
+.secrets:hover .clues,.secrets:focus-within .clues{opacity:1;max-height:80px}
+
+/* ═══ PROMPT VAULT ══════════════════════════════════════════ */
+.pv-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1.3rem}
+.pv-chip{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:7px 14px;border-radius:99px;border:1px solid var(--line2);color:var(--ink3);background:transparent;cursor:pointer;transition:all .2s;font-weight:600}
+.pv-chip:hover{color:var(--ink);border-color:rgba(155,92,255,.45)}
+.pv-chip.on{color:#fff;background:var(--grad);border-color:transparent;box-shadow:0 0 18px rgba(155,92,255,.3)}
+.pv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:14px}
+.pv-card{border:1px solid var(--line);border-radius:18px;background:var(--panel);padding:1.25rem 1.3rem;display:flex;flex-direction:column;gap:10px;transition:border-color .25s,box-shadow .25s,transform .25s}
+.pv-card:hover{border-color:rgba(155,92,255,.4);box-shadow:0 8px 30px rgba(155,92,255,.12);transform:translateY(-3px)}
+.pv-top{display:flex;align-items:center;gap:8px}
+.pv-role{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;padding:3px 9px;border-radius:99px;font-weight:600}
+.pv-app{font-family:var(--mono);font-size:9px;color:var(--ink3);margin-left:auto;letter-spacing:.06em}
+.pv-title{font-size:14.5px;font-weight:600;letter-spacing:-.005em;line-height:1.35}
+.pv-prompt{position:relative;background:rgba(0,0,0,.32);border:1px dashed var(--line2);border-radius:12px;padding:.85rem 1rem;font-family:var(--mono);font-size:11.5px;line-height:1.7;color:var(--ink2);flex:1}
+.pv-prompt mark{background:rgba(255,178,62,.16);color:var(--amber);border-radius:3px;padding:0 3px;font-style:normal}
+.pv-why{font-size:12px;color:var(--ink3);line-height:1.6}
+.pv-why b{color:var(--ink2);font-weight:600}
+.pv-foot{display:flex;align-items:center;gap:10px;margin-top:2px}
+.pv-by{font-size:11px;color:var(--ink4);font-style:italic;font-family:var(--serif)}
+.pv-copy{margin-left:auto;display:inline-flex;align-items:center;gap:6px;font-family:var(--body);font-size:11.5px;font-weight:600;letter-spacing:.04em;padding:7px 14px;border-radius:8px;border:1px solid rgba(155,92,255,.35);background:transparent;color:var(--ink2);cursor:pointer;transition:background .2s,color .2s;min-height:34px}
+.pv-copy:hover{background:rgba(155,92,255,.16);color:var(--ink)}
+.pv-copy.copied{border-color:rgba(37,208,244,.45);color:var(--cyan);background:rgba(37,208,244,.08)}
+.pv-cta{margin-top:1.2rem;text-align:center;font-size:12.5px;color:var(--ink3)}
+.pv-cta a{color:var(--violet);text-decoration:none;font-weight:600}
+.pv-cta a:hover{text-decoration:underline}
+
+/* defending champions banner */
+.champ-banner{display:flex;align-items:center;gap:12px;border:1px solid rgba(255,178,62,.3);background:linear-gradient(110deg,rgba(255,178,62,.08),rgba(255,106,61,.05));border-radius:16px;padding:.85rem 1.2rem;margin-bottom:1.1rem;animation:champ-glow 3.5s ease infinite}
+@keyframes champ-glow{0%,100%{box-shadow:0 0 0 rgba(255,178,62,0)}50%{box-shadow:0 0 26px rgba(255,178,62,.16)}}
+.champ-trophy{font-size:1.5rem;flex-shrink:0;animation:champ-bob 2.6s ease-in-out infinite}
+@keyframes champ-bob{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+.champ-text{font-size:13px;color:var(--ink2)}
+.champ-text b{font-family:var(--display);color:var(--amber);font-weight:700}
+
+/* ═══ RESPONSIVE ════════════════════════════════════════════ */
+@media (max-width:880px){
+  .hero{grid-template-columns:1fr;align-items:start}
+  .cup-layout{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2n){border-right:none}
+  .stat:nth-child(-n+2){border-bottom:1px solid var(--line)}
+  .spot-grid{grid-template-columns:1fr}
+  .spot-side{border-right:none;border-bottom:1px solid var(--line);flex-direction:row;align-items:center;flex-wrap:wrap}
+  .spot-date{margin-top:0;margin-left:auto}
+}
+
+/* ═══ REDUCED MOTION ════════════════════════════════════════
+   Honors prefers-reduced-motion: strips the ambient/decorative
+   motion (aurora, ticker, orbit, gradient roam, twinkle, etc.)
+   while keeping the layout and content fully intact. ───────── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1!important;transform:none!important}
+  .ticker-track{animation:none!important;transform:none!important;white-space:normal;flex-wrap:wrap;gap:8px}
+  .atmo-stars span{opacity:.4!important}
+}
+</style>
+</head>
+<body>
+
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<div class="atmo" aria-hidden="true">
+  <div class="aurora"></div>
+  <div class="atmo-grid"></div>
+  <div class="atmo-noise"></div>
+  <div class="atmo-stars" id="stars"></div>
+</div>
+<div id="toasts" role="status" aria-live="polite" aria-atomic="false"></div>
+
+<!-- ── TIP TICKER ── -->
+<div class="ticker" role="region" aria-label="Rotating Copilot tips" tabindex="0">
+  <div class="ticker-track" id="ticker-track"></div>
+</div>
+
+<main class="page" id="main">
+
+  <!-- ── SETUP NOTICE — delete after configuring ── -->
+  <div class="notice" role="note">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"/></svg>
+    <div>
+      <strong>One-time setup:</strong> Update <code>CONFIG</code> below (session date, Teams link, spotlight fallback). Your Power Automate flow needs actions: <code>getRecordings</code>, <code>getRecaps</code>, <code>getSpotlight</code>, <code>markDone</code>, <code>getProgress</code>, <code>getLeaderboard</code>. The XP list now needs columns: <code>Title</code> (name), <code>MarketUnit</code>, <code>Challenge</code>, <code>XPValue</code>, <code>MonthKey</code> (e.g. "2026-06"). Add a <code>Spotlight</code> list with <code>Title</code>, <code>Author</code>, <code>MarketUnit</code>, <code>Body</code>, <code>PostDate</code>. Then delete this notice.
+    </div>
+  </div>
+
+  <!-- ── HERO ── -->
+  <header class="hero reveal in">
+    <div>
+      <div class="eyebrow"><span class="live-dot" aria-hidden="true"></span>HR · Biweekly Office Hours · Est. 2025</div>
+      <h1 class="title">Copilot<br><span class="gw">Corner</span><span class="serif-it" aria-hidden="true">&nbsp;✦</span></h1>
+      <p class="hero-sub">The HR team's home for everything Microsoft Copilot — session recordings, recaps, the monthly <em>Market Unit Cup</em>, and a rotating guest spotlight from your colleagues.</p>
+      <div class="hero-ctas">
+        <a class="btn-primary" id="join-btn" href="#" target="_blank" rel="noopener">
+          <svg class="ic" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 6.75h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z"/></svg>
+          Join the next session
+        </a>
+        <a class="btn-ghost" href="https://m365.cloud.microsoft/chat" target="_blank" rel="noopener"><span aria-hidden="true">✦</span> Open Copilot</a>
+      </div>
+    </div>
+    <div class="session-card">
+      <div class="session-inner">
+        <div class="session-label">Next session</div>
+        <div class="session-date" id="next-date">—</div>
+        <div class="session-time" id="next-time"></div>
+        <div class="session-count" id="countdown" aria-live="polite" aria-label="Time until next session">
+          <div class="cd-unit"><div class="cd-n" id="cd-d">–</div><div class="cd-l">days</div></div>
+          <div class="cd-unit"><div class="cd-n" id="cd-h">–</div><div class="cd-l">hrs</div></div>
+          <div class="cd-unit"><div class="cd-n" id="cd-m">–</div><div class="cd-l">min</div></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── STATS ── -->
+  <div class="stats reveal">
+    <div class="stat"><div class="stat-n" data-count id="stat-sessions">0</div><div class="stat-l">Sessions hosted</div></div>
+    <div class="stat"><div class="stat-n" data-count id="stat-recordings">0</div><div class="stat-l">Recordings</div></div>
+    <div class="stat"><div class="stat-n" data-count id="stat-recaps">0</div><div class="stat-l">Recaps published</div></div>
+    <div class="stat"><div class="stat-n" data-count id="stat-xp">0</div><div class="stat-l">Cup points this month</div></div>
+  </div>
+
+  <!-- ── 01 · SPOTLIGHT ── -->
+  <section class="section reveal" aria-labelledby="sec-spotlight">
+    <div class="sec-head">
+      <span class="sec-no" aria-hidden="true">01</span>
+      <h2 class="sec-title" id="sec-spotlight">This week's <span class="it">spotlight</span></h2>
+      <div class="sec-line" aria-hidden="true"></div>
+      <span class="sec-meta">Guest post</span>
+    </div>
+    <div class="spotlight" id="spotlight">
+      <div class="spot-grid">
+        <div class="spot-side">
+          <span class="spot-badge"><span aria-hidden="true">★</span> Guest of the week</span>
+          <div class="spot-avatar" id="spot-avatar" aria-hidden="true">·</div>
+          <div>
+            <div class="spot-author" id="spot-author">Loading…</div>
+            <div class="spot-mu" id="spot-mu"></div>
+          </div>
+          <div class="spot-date" id="spot-date"></div>
+        </div>
+        <div class="spot-main">
+          <h3 class="spot-title" id="spot-title"></h3>
+          <div class="spot-body" id="spot-body"></div>
+          <a class="spot-cta" id="spot-cta" href="mailto:?subject=I%20want%20to%20be%20a%20Copilot%20Corner%20guest%20poster">Want the mic next week? Pitch us your Copilot story →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 02 · MARKET UNIT CUP ── -->
+  <section class="section reveal" aria-labelledby="sec-cup">
+    <div class="sec-head">
+      <span class="sec-no" aria-hidden="true">02</span>
+      <h2 class="sec-title" id="sec-cup">The Market Unit <span class="it">Cup</span></h2>
+      <div class="sec-line" aria-hidden="true"></div>
+      <span class="sec-meta" id="cup-reset"></span>
+    </div>
+
+    <div class="champ-banner" id="champ-banner" style="display:none">
+      <span class="champ-trophy" aria-hidden="true">🏆</span>
+      <span class="champ-text" id="champ-text"></span>
+    </div>
+
+    <div class="cup-layout">
+      <div class="cup-board">
+        <div class="cup-head">
+          <span class="cup-title"><span aria-hidden="true">🏆</span> Standings</span>
+          <span class="cup-month" id="cup-month"></span>
+        </div>
+        <div class="cup-body" id="cup-board" aria-live="polite" aria-label="Market Unit Cup standings">
+          <div class="skeleton" style="height:30px;margin:7px 0"></div>
+          <div class="skeleton" style="height:30px;margin:7px 0"></div>
+          <div class="skeleton" style="height:30px;margin:7px 0"></div>
+          <div class="skeleton" style="height:30px;margin:7px 0"></div>
+          <div class="skeleton" style="height:30px;margin:7px 0"></div>
+          <div class="skeleton" style="height:30px;margin:7px 0"></div>
+        </div>
+        <div class="cup-foot"><span>Resets monthly</span><b id="cup-days-left"></b></div>
+      </div>
+
+      <div class="challenges">
+        <!-- identity: only asked when participating -->
+        <div class="identity-bar" id="identity-bar">
+          <div class="id-text" id="id-text">Completing challenges earns points for <b>your market unit</b>. Join in — takes five seconds.</div>
+          <label class="vh" for="id-name">Your name</label>
+          <input class="id-field" id="id-name" type="text" placeholder="Your name" maxlength="60" style="max-width:170px" autocomplete="name" />
+          <label class="vh" for="id-mu">Your market unit</label>
+          <select class="id-field" id="id-mu" aria-label="Your market unit"></select>
+          <button class="id-join-btn" type="button" onclick="joinCup()">Join the Cup</button>
+        </div>
+        <div id="challenge-list">
+          <div class="skeleton" style="height:78px;border-radius:18px;margin-bottom:11px"></div>
+          <div class="skeleton" style="height:78px;border-radius:18px;margin-bottom:11px"></div>
+          <div class="skeleton" style="height:78px;border-radius:18px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── 03 · HR PROMPT VAULT ── -->
+  <section class="section reveal" aria-labelledby="sec-vault">
+    <div class="sec-head">
+      <span class="sec-no" aria-hidden="true">03</span>
+      <h2 class="sec-title" id="sec-vault">The HR Prompt <span class="it">Vault</span></h2>
+      <div class="sec-line" aria-hidden="true"></div>
+      <span class="sec-meta">Field-tested by our team</span>
+    </div>
+    <div class="pv-filters" id="pv-filters" role="group" aria-label="Filter prompts by role"></div>
+    <div class="pv-grid" id="pv-grid"></div>
+    <div class="pv-cta">Got a prompt that saves you real time? <a id="pv-submit" href="mailto:?subject=Prompt%20Vault%20submission">Submit it to the Vault →</a> Approved prompts get your name on the card.</div>
+  </section>
+
+  <!-- ── 04 · RECORDINGS ── -->
+  <section class="section reveal" aria-labelledby="sec-rec">
+    <div class="sec-head">
+      <span class="sec-no" aria-hidden="true">04</span>
+      <h2 class="sec-title" id="sec-rec">Session <span class="it">recordings</span></h2>
+      <div class="sec-line" aria-hidden="true"></div>
+      <span class="sec-meta" id="rec-count"></span>
+    </div>
+    <div class="rec-grid" id="rec-grid">
+      <div style="grid-column:1/-1"><div class="skeleton" style="height:170px;border-radius:18px"></div></div>
+    </div>
+  </section>
+
+  <!-- ── 05 · RECAPS ── -->
+  <section class="section reveal" aria-labelledby="sec-recap">
+    <div class="sec-head">
+      <span class="sec-no" aria-hidden="true">05</span>
+      <h2 class="sec-title" id="sec-recap">Session <span class="it">recaps</span></h2>
+      <div class="sec-line" aria-hidden="true"></div>
+      <span class="sec-meta" id="recap-count"></span>
+    </div>
+    <div class="recaps" id="recap-list">
+      <div class="recap-row"><div class="skeleton" style="height:44px;flex:1"></div></div>
+    </div>
+  </section>
+
+  <!-- ── 06 · RESOURCES ── -->
+  <section class="section reveal" aria-labelledby="sec-res">
+    <div class="sec-head">
+      <span class="sec-no" aria-hidden="true">06</span>
+      <h2 class="sec-title" id="sec-res">Quick <span class="it">resources</span></h2>
+      <div class="sec-line" aria-hidden="true"></div>
+    </div>
+    <div class="res-grid">
+      <a class="res-tile" href="https://adoption.microsoft.com/en-us/copilot/" target="_blank" rel="noopener">
+        <div class="res-ic"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--blue)" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg></div>
+        <div><div class="res-l">Microsoft Adoption</div><div class="res-s">Official Copilot guides</div></div>
+      </a>
+      <a class="res-tile" href="https://learn.microsoft.com/en-us/copilot/microsoft-365/" target="_blank" rel="noopener">
+        <div class="res-ic"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--violet)" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/></svg></div>
+        <div><div class="res-l">Microsoft Learn</div><div class="res-s">Copilot documentation</div></div>
+      </a>
+      <a class="res-tile" href="#" id="cal-link" target="_blank" rel="noopener">
+        <div class="res-ic"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--cyan)" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg></div>
+        <div><div class="res-l">Add to calendar</div><div class="res-s">Never miss a session</div></div>
+      </a>
+      <a class="res-tile" href="#" id="prompt-lib-link" target="_blank" rel="noopener">
+        <div class="res-ic"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--pink)" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"/></svg></div>
+        <div><div class="res-l">HR prompt library</div><div class="res-s">Curated Copilot prompts</div></div>
+      </a>
+      <a class="res-tile" href="https://techcommunity.microsoft.com/t5/microsoft-365-copilot/ct-p/Microsoft365Copilot" target="_blank" rel="noopener">
+        <div class="res-ic"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--coral)" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></div>
+        <div><div class="res-l">Tech community</div><div class="res-s">M365 Copilot forums</div></div>
+      </a>
+      <a class="res-tile" href="https://aka.ms/CopilotScenarioLibrary" target="_blank" rel="noopener">
+        <div class="res-ic"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--amber)" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/></svg></div>
+        <div><div class="res-l">Scenario library</div><div class="res-s">Real-world use cases</div></div>
+      </a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <button class="logo-click" id="logo-egg" type="button" aria-label="Copilot Corner" title="✦"><span aria-hidden="true">✦</span></button>&nbsp; Copilot Corner · HR Enablement · Built with curiosity
+    <span class="secrets" tabindex="0"><span aria-hidden="true">⌕</span> this page keeps three secrets
+      <span class="clues">
+        ① old-school gamers know the code &nbsp;·&nbsp; ② the star above rewards persistence (×5) &nbsp;·&nbsp; ③ whisper the year it all began — just type it
+      </span>
+    </span>
+  </footer>
+
+</main><!-- /page -->
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  ✏️  CONFIG
+// ═══════════════════════════════════════════════════════════════
+const CONFIG = {
+  // Sessions repeat every 2 weeks. Set ONE anchor session (any past or
+  // future occurrence) and the page computes the next one forever.
+  sessionAnchor:    '2026-06-17T12:00:00',   // Wed Jun 17, 12:00 PM local
+  sessionEveryDays: 14,
+  sessionLengthMin: 60,                       // rolls to the next one after this
+  nextSessionTime:  '12:00 PM – 1:00 PM',
+  teamsJoinLink:    'https://teams.microsoft.com/l/meetup-join/PASTE_LINK',
+  calendarLink:     '',
+  promptLibLink:    '',
+  spotlightEmail:   '',                       // mailto for "be the next guest"
+  totalSessions:    24,
+
+  // Fallback spotlight shown if the flow has no Spotlight rows yet
+  spotlightFallback: {
+    Title:  'How I cut my interview-notes time in half',
+    Author: 'Stephanie Brower',
+    MarketUnit: 'LAMU',
+    PostDate: '2026-06-01',
+    Body: 'I used to spend 30+ minutes after every interview cleaning up my notes. Now I drop my raw Teams transcript into Copilot and ask it to structure everything for the panel.\n\nThe debriefs go faster, nothing falls through the cracks, and I sound twice as prepared. Try it on your next intake call — you will not go back.',
+  },
+};
+
+// Honor the OS-level "reduce motion" setting throughout the page.
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// Market units — codes, full names, brand colors for the Cup
+const MARKET_UNITS = [
+  { code:'LAMU',    name:'Los Angeles MU',        color:'#3076FF' },
+  { code:'SDMU',    name:'San Diego MU',          color:'#25D0F4' },
+  { code:'NCMU',    name:'Northern California MU',color:'#9B5CFF' },
+  { code:'CHIMU',   name:'Chicago MU',            color:'#E14DF2' },
+  { code:'TN/KY',   name:'Tennessee / Kentucky MU', color:'#FF6A3D' },
+  { code:'MI/MN',   name:'Michigan / Minnesota MU', color:'#FFB23E' },
+  { code:'CORP',    name:'Corporate',               color:'#5A6CFF' },
+  { code:'SUPPLY',  name:'Supply Chain',            color:'#2EE6A8' },
+  { code:'CUST',    name:'Customer',                color:'#FF4D8D' },
+  { code:'CAP',     name:'Capabilities',            color:'#9FE870' },
+];
+
+const CHALLENGES = [
+  { id:'outlook-draft', label:'Draft an email with Copilot in Outlook', desc:'Use "Draft with Copilot" on any outgoing email this month', xp:50,  c:'c1', icon:'✉️' },
+  { id:'teams-recap',   label:'Summarize a meeting in Teams',           desc:'Open the Recap tab after a call and share one key insight', xp:75,  c:'c2', icon:'📋' },
+  { id:'word-jd',       label:'Rewrite a job description in Word',      desc:'Ask Copilot to make a JD clearer and more inclusive',       xp:100, c:'c3', icon:'📝' },
+  { id:'excel-trend',   label:'Analyze HR data in Excel',               desc:'Ask Copilot to surface a trend in any spreadsheet',         xp:100, c:'c4', icon:'📊' },
+  { id:'vault-submit',  label:'Submit a prompt to the Vault',           desc:'Share a Copilot prompt that saves you real time — get your name on the card', xp:150, c:'c3', icon:'⚡' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  HR PROMPT VAULT
+//  These aren't the generic Prompt Gallery prompts — they're written
+//  for OUR work: frontline bottling recruiting, CDL drivers,
+//  merchandisers, warehouse, HRBP work in a union environment.
+//  [BRACKETED] parts are fill-in-the-blank.
+//  Roles: ta = Talent Acquisition · hrbp = HRBP & ER · tr = Total
+//  Rewards & LOA · ld = Learning & Dev · ops = HR Ops & Admin
+// ═══════════════════════════════════════════════════════════════
+const PV_ROLES = {
+  ta:  { label:'Talent Acquisition', color:'#3076FF' },
+  hrbp:{ label:'HRBP & ER',          color:'#9B5CFF' },
+  tr:  { label:'Rewards & LOA',      color:'#FF6A3D' },
+  ld:  { label:'Learning & Dev',     color:'#25D0F4' },
+  ops: { label:'HR Ops',             color:'#E14DF2' },
+};
+
+const PROMPTS = [
+  { role:'ta', app:'Copilot Chat', title:'Frontline JD that actually attracts drivers',
+    text:'Rewrite this CDL Class A Driver job description for [LOCATION]. Lead with what drivers care about most: home daily, schedule, pay range, and physical demands stated honestly. Cut corporate jargon. Keep it under 350 words and write at an 8th-grade reading level. [PASTE JD]',
+    why:'Generic JD rewrites bury the route/schedule info drivers screen for first. Naming the audience changes everything.' },
+  { role:'ta', app:'Teams', title:'Interview debrief in 60 seconds',
+    text:'From this interview transcript, build a panel debrief: candidate strengths with supporting quotes, concerns or gaps, and 4 follow-up questions for the next round. Flag anything related to [KEY REQUIREMENT] specifically.',
+    why:'Pulling direct quotes keeps the debrief evidence-based instead of vibes-based.' },
+  { role:'ta', app:'Outlook', title:'Decline email that protects the brand',
+    text:'Draft a warm rejection email to a candidate for our [ROLE] position who reached the final round. Thank them for their time at [SPECIFIC STAGE], leave the door open for future merchandiser or warehouse openings, and invite them to our talent community. Keep it under 120 words and human.',
+    why:'Every candidate is also a consumer of our products. Final-round declines deserve more than a template.' },
+  { role:'hrbp', app:'Copilot Chat', title:'Prep for a tough coaching conversation',
+    text:'I need to coach a supervisor whose team has [ISSUE, e.g. rising attendance points]. Build me a conversation plan: opening framing that avoids blame, 3 questions to understand root cause before advising, and language for setting a clear expectation with a follow-up date. The audience is a frontline warehouse supervisor.',
+    why:'Asking for questions-before-advice forces the conversation structure good HRBPs use anyway — now it takes 2 minutes to prep.' },
+  { role:'hrbp', app:'Word', title:'Turn messy ER notes into a clean timeline',
+    text:'Convert these investigation notes into a chronological timeline table: date, event, source (who reported it), and corroborating evidence or open question. Flag any gaps where dates conflict or a claim has no source. Do not add interpretation. [PASTE NOTES]',
+    why:'"Do not add interpretation" is the key line — it keeps Copilot from editorializing in a document that may be discoverable.' },
+  { role:'hrbp', app:'Teams', title:'What did I miss in that grievance meeting?',
+    text:'From this meeting recap, list: every commitment made and who owns it, every deadline mentioned, and any statement where management and the union rep characterized the same event differently. Quote those directly.',
+    why:'The side-by-side characterization catch is something the recap tab won\'t do on its own — you have to ask.' },
+  { role:'tr', app:'Outlook', title:'Explain a leave decision in plain English',
+    text:'Rewrite this leave-of-absence explanation for an hourly employee. Keep every fact accurate but write it at an 8th-grade level, lead with what the employee needs to DO and by WHEN, and put dates in bold. No legal jargon without a plain-language gloss in parentheses. [PASTE DRAFT]',
+    why:'LOA letters fail when employees can\'t find the action item. This restructures around the deadline.' },
+  { role:'tr', app:'Excel', title:'Spot the outlier before the audit does',
+    text:'Analyze this [overtime / PTO balance / pay change] data. Identify outliers by department and flag any individual more than 2 standard deviations from their group average. Summarize the top 5 things a comp analyst should investigate first.',
+    why:'Asking for "what to investigate first" turns a data dump into a worklist.' },
+  { role:'ld', app:'PowerPoint', title:'Safety talk that frontline teams will sit through',
+    text:'Create a 6-slide toolbox talk on [SAFETY TOPIC] for warehouse and delivery teams. One idea per slide, max 15 words per slide, each with a speaker note containing one real-world scenario question to ask the group. End with a single commitment slide.',
+    why:'The 15-word ceiling is what keeps Copilot from generating wall-of-text slides nobody reads at 5 AM.' },
+  { role:'ld', app:'Copilot Chat', title:'Turn an SOP into a quiz',
+    text:'Read this SOP and generate a 5-question knowledge check: 3 multiple choice, 2 scenario-based ("what would you do if…"). Include an answer key with the SOP section each answer comes from. [PASTE SOP]',
+    why:'Citing the SOP section in the answer key makes the quiz defensible and self-correcting.' },
+  { role:'ops', app:'Outlook', title:'Inbox triage on Monday morning',
+    text:'Summarize my unread emails from the last 3 days. Group them: (1) needs my action this week with the deadline, (2) FYI only, (3) waiting on someone else. For group 1, draft a one-line reply I can edit for each.',
+    why:'The three-bucket sort plus pre-drafted replies is the difference between triage and actually clearing the inbox.' },
+  { role:'ops', app:'Word', title:'Policy update, redlined and readable',
+    text:'Compare these two versions of our [POLICY NAME] policy. Produce a summary table of every change: section, old language, new language, and a one-line plain-English explanation of what changed for employees. [PASTE BOTH VERSIONS]',
+    why:'The "what changed for employees" column is what your comms summary needs anyway — now it writes itself.' },
+];
+
+const TIPS = [
+  'Press <b>Alt + I</b> in Word to summon Copilot anywhere in your doc',
+  'Ask Copilot in Teams <b>"What did I miss?"</b> when you join a meeting late',
+  'In Outlook, <b>"Coaching by Copilot"</b> reviews your tone before you hit send',
+  'Reference files with <b>/</b> in Copilot chat to ground answers in your docs',
+  'Ask Excel Copilot to <b>"highlight outliers"</b> before your next data review',
+  'End prompts with <b>"format as a table"</b> for instantly scannable output',
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  POWER AUTOMATE FLOW — one endpoint, action-routed
+//  Actions used by this page:
+//    getRecordings        → { value:[{ Title, SessionDate, Duration, TeamsLink }] }
+//    getRecaps            → { value:[{ Title, SessionDate, RecapBody }] }
+//    getSpotlight         → { value:[{ Title, Author, MarketUnit, Body, PostDate }] } (newest first)
+//    markDone             ← { userName, marketUnit, challengeId, xpValue, monthKey }
+//                         → { status:"created" } | { status:"duplicate" }
+//    getProgress          ← { userName, monthKey }       → { value:[{ Challenge }] }
+//    getLeaderboard       ← { monthKey }                 → { value:[{ MarketUnit, XPValue }] }
+// ═══════════════════════════════════════════════════════════════
+const FLOW_URL = 'https://a477fe69c32a4af79331a1752086c6.34.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9542abbc7db0474683c0e723e5df31ea/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=3MHOZz8k1a5m_ADXCd9Ix-lE3vIeqyaxRai7KKGMzss';
+
+async function callFlow(action, data = {}) {
+  let res;
+  try {
+    res = await fetch(FLOW_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...data }),
+    });
+  } catch (e) {
+    // "Failed to fetch" = browser blocked it before it left (almost always CORS).
+    throw new Error('Blocked by browser (CORS) — the flow must answer OPTIONS preflight and return Access-Control-Allow-Origin headers');
+  }
+  if (!res.ok) throw new Error(`Flow "${action}" → HTTP ${res.status}`);
+  return res.json();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmt(d,o){try{return new Date(d).toLocaleDateString('en-US',o)}catch{return d||''}}
+function monthKey(){return new Date().toISOString().slice(0,7)}           // "2026-06" — Cup resets automatically each month
+function daysLeftInMonth(){const n=new Date();return new Date(n.getFullYear(),n.getMonth()+1,0).getDate()-n.getDate()}
+function toast(msg,type='info'){
+  const t=document.createElement('div');
+  t.className='toast '+type;
+  // errors interrupt; everything else announces politely via the live region
+  t.setAttribute('role', type==='error' ? 'alert' : 'status');
+  t.textContent=msg;
+  $('toasts').appendChild(t);
+  setTimeout(()=>t.remove(),4200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  IDENTITY — only collected when someone opts into the Cup.
+//  No prompt() on page load; cached after the first join.
+// ═══════════════════════════════════════════════════════════════
+function getIdentity(){try{return JSON.parse(localStorage.getItem('cc-identity'))||null}catch{return null}}
+function saveIdentity(id){localStorage.setItem('cc-identity',JSON.stringify(id))}
+function clearIdentity(){localStorage.removeItem('cc-identity');renderIdentityBar()}
+
+function renderIdentityBar(){
+  const bar=$('identity-bar'), me=getIdentity();
+  if(me){
+    bar.classList.add('joined');
+    bar.innerHTML=`
+      <div class="id-text">Scoring for <b>${esc(me.name)}</b> · <b>${esc(me.mu)}</b> — every challenge you finish adds to your unit's total.</div>
+      <button class="id-edit" type="button" onclick="clearIdentity()" aria-label="Change your name or market unit">change</button>`;
+  }else{
+    bar.classList.remove('joined');
+    bar.innerHTML=`
+      <div class="id-text">Completing challenges earns points for <b>your market unit</b>. Join in — takes five seconds.</div>
+      <label class="vh" for="id-name">Your name</label>
+      <input class="id-field" id="id-name" type="text" placeholder="Your name" maxlength="60" style="max-width:170px" autocomplete="name" />
+      <label class="vh" for="id-mu">Your market unit</label>
+      <select class="id-field" id="id-mu" aria-label="Your market unit"></select>
+      <button class="id-join-btn" type="button" onclick="joinCup()">Join the Cup</button>`;
+    const sel=$('id-mu');
+    sel.innerHTML='<option value="" disabled selected>Market unit</option>'+
+      MARKET_UNITS.map(m=>`<option value="${esc(m.code)}">${esc(m.code)} — ${esc(m.name)}</option>`).join('');
+  }
+}
+
+function joinCup(){
+  const name=($('id-name').value||'').trim();
+  const mu=$('id-mu').value;
+  if(!name){toast('Add your name first','error');$('id-name').focus();return}
+  if(!mu){toast('Pick your market unit','error');$('id-mu').focus();return}
+  saveIdentity({name,mu});
+  renderIdentityBar();
+  toast(`Welcome aboard, ${name.split(' ')[0]}! Scoring for ${mu} ⚡`,'success');
+  loadProgress();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  STATIC DOM SETUP
+// ═══════════════════════════════════════════════════════════════
+// ── recurring session: next biweekly occurrence from the anchor ──
+function nextSession(){
+  const every=CONFIG.sessionEveryDays*864e5;
+  const anchor=new Date(CONFIG.sessionAnchor).getTime();
+  const rollAt=Date.now()-CONFIG.sessionLengthMin*6e4;  // show current session until it ends
+  let t=anchor;
+  if(rollAt>anchor) t=anchor+Math.ceil((rollAt-anchor)/every)*every;
+  return new Date(t);
+}
+const NEXT_SESSION=nextSession();
+$('next-date').textContent=NEXT_SESSION.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+$('next-time').textContent=CONFIG.nextSessionTime;
+$('join-btn').href=CONFIG.teamsJoinLink;
+if(CONFIG.calendarLink) $('cal-link').href=CONFIG.calendarLink;
+if(CONFIG.promptLibLink) $('prompt-lib-link').href=CONFIG.promptLibLink;
+if(CONFIG.spotlightEmail) $('spot-cta').href=`mailto:${CONFIG.spotlightEmail}?subject=I%20want%20to%20be%20a%20Copilot%20Corner%20guest%20poster`;
+
+// countdown to next session (recomputes, so it rolls over on its own)
+(function tick(){
+  const target=nextSession();
+  $('next-date').textContent=target.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+  const diff=target-new Date();
+  if(diff>0){
+    $('cd-d').textContent=Math.floor(diff/864e5);
+    $('cd-h').textContent=Math.floor(diff/36e5)%24;
+    $('cd-m').textContent=Math.floor(diff/6e4)%60;
+  }else{$('cd-d').textContent='live';$('cd-h').textContent='✦';$('cd-m').textContent='✦'}
+  setTimeout(tick,30000);
+})();
+
+// month labels
+$('cup-month').textContent=new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'});
+$('cup-days-left').textContent=daysLeftInMonth()+' days left';
+$('cup-reset').textContent='Monthly · all units reset on the 1st';
+
+// ticker (duplicated for seamless loop)
+(function(){
+  const seq=TIPS.map(t=>`<span class="tick-item"><span class="tick-pill" aria-hidden="true">✦ TIP</span>${t}</span>`).join('');
+  // With reduced motion the track doesn't scroll, so one copy is enough.
+  $('ticker-track').innerHTML=REDUCED_MOTION ? seq : seq+seq;
+})();
+
+// stars (skipped entirely when reduced motion is requested)
+(function(){
+  if(REDUCED_MOTION) return;
+  const wrap=$('stars');
+  for(let i=0;i<26;i++){
+    const s=document.createElement('span');
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=(Math.random()*5)+'s';
+    s.style.animationDuration=(3+Math.random()*5)+'s';
+    wrap.appendChild(s);
+  }
+})();
+
+// scroll reveal
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.08});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+
+// animated count-up (respects reduced motion — jumps straight to the value)
+function countUp(el,target,ms=1200){
+  if(REDUCED_MOTION){el.textContent=Math.round(target).toLocaleString();return}
+  const t0=performance.now();
+  (function step(now){
+    const p=Math.min((now-t0)/ms,1), e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*e).toLocaleString();
+    if(p<1)requestAnimationFrame(step);
+  })(t0);
+}
+countUp($('stat-sessions'),CONFIG.totalSessions);
+
+// ═══════════════════════════════════════════════════════════════
+//  SPOTLIGHT — flow action "getSpotlight", falls back to CONFIG
+// ═══════════════════════════════════════════════════════════════
+function renderSpotlight(p){
+  const initials=(p.Author||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  $('spot-avatar').textContent=initials;
+  $('spot-author').textContent=p.Author||'Guest';
+  $('spot-mu').textContent=p.MarketUnit?('Market unit · '+p.MarketUnit):'';
+  $('spot-date').textContent=p.PostDate?('Posted '+fmt(p.PostDate,{month:'long',day:'numeric'})):'';
+  $('spot-title').textContent=p.Title||'';
+  $('spot-body').textContent=p.Body||'';
+}
+async function loadSpotlight(){
+  try{
+    const {value}=await callFlow('getSpotlight');
+    renderSpotlight(value&&value.length?value[0]:CONFIG.spotlightFallback);
+  }catch(e){renderSpotlight(CONFIG.spotlightFallback)}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PROMPT VAULT — filterable, copy-ready, community-credited.
+//  Optional flow action "getPrompts" lets the team grow the Vault
+//  from a SharePoint list (Title, Role, App, PromptText, Why, By)
+//  without touching this file; rows merge on top of the seed set.
+// ═══════════════════════════════════════════════════════════════
+let pvFilter='all', pvData=PROMPTS.slice();
+
+function copyPrompt(text,btn){
+  const clean=text.replace(/\[([^\]]+)\]/g,'[$1]');
+  (navigator.clipboard?.writeText(clean)||Promise.reject()).then(()=>{
+    btn.textContent='✓ Copied'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2200);
+    toast('Prompt copied — paste it into Copilot ⚡','info');
+  }).catch(()=>{
+    // fallback for older webviews
+    const ta=document.createElement('textarea'); ta.value=clean;
+    document.body.appendChild(ta); ta.select();
+    try{document.execCommand('copy');toast('Prompt copied ⚡','info')}catch{}
+    ta.remove();
+  });
+}
+
+function renderVaultFilters(){
+  const counts={all:pvData.length};
+  pvData.forEach(p=>counts[p.role]=(counts[p.role]||0)+1);
+  $('pv-filters').innerHTML=
+    `<button class="pv-chip ${pvFilter==='all'?'on':''}" type="button" aria-pressed="${pvFilter==='all'}" onclick="setPvFilter('all')">All (${counts.all})</button>`+
+    Object.entries(PV_ROLES).map(([k,r])=>
+      `<button class="pv-chip ${pvFilter===k?'on':''}" type="button" aria-pressed="${pvFilter===k}" onclick="setPvFilter('${k}')">${r.label} (${counts[k]||0})</button>`).join('');
+}
+function setPvFilter(f){pvFilter=f;renderVaultFilters();renderVault()}
+
+function renderVault(){
+  const items=pvData.filter(p=>pvFilter==='all'||p.role===pvFilter);
+  $('pv-grid').innerHTML=items.map((p,i)=>{
+    const r=PV_ROLES[p.role]||{label:p.role,color:'#9B5CFF'};
+    const body=esc(p.text).replace(/\[([^\]]+)\]/g,'<mark>[$1]</mark>');
+    return`
+      <div class="pv-card">
+        <div class="pv-top">
+          <span class="pv-role" style="color:${r.color};border:1px solid ${r.color}55;background:${r.color}14">${esc(r.label)}</span>
+          <span class="pv-app">${esc(p.app)}</span>
+        </div>
+        <div class="pv-title">${esc(p.title)}</div>
+        <div class="pv-prompt">${body}</div>
+        <div class="pv-why"><b>Why it works:</b> ${esc(p.why)}</div>
+        <div class="pv-foot">
+          ${p.by?`<span class="pv-by">— ${esc(p.by)}</span>`:''}
+          <button class="pv-copy" type="button" aria-label="Copy prompt: ${esc(p.title)}" onclick='copyPrompt(${JSON.stringify(p.text)},this)'>Copy</button>
+        </div>
+      </div>`;
+  }).join('')||'<div class="empty" style="grid-column:1/-1">No prompts in this category yet — submit the first one!</div>';
+}
+
+async function loadVault(){
+  renderVaultFilters(); renderVault();
+  try{
+    const {value}=await callFlow('getPrompts');
+    if(value&&value.length){
+      const extra=value.map(v=>({role:(v.Role||'ops').toLowerCase(),app:v.App||'Copilot Chat',title:v.Title||'',text:v.PromptText||'',why:v.Why||'',by:v.By||''})).filter(v=>v.text);
+      pvData=extra.concat(PROMPTS);
+      renderVaultFilters(); renderVault();
+    }
+  }catch(e){/* seed prompts already rendered */}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  DEFENDING CHAMPIONS — queries LAST month's leaderboard and
+//  crowns the winner at the top of the Cup. Hidden if no data.
+// ═══════════════════════════════════════════════════════════════
+function lastMonthKey(){
+  const d=new Date(); d.setMonth(d.getMonth()-1);
+  return d.toISOString().slice(0,7);
+}
+async function loadChampion(){
+  try{
+    const {value}=await callFlow('getLeaderboard',{monthKey:lastMonthKey()});
+    if(!value||!value.length)return;
+    const totals={};
+    value.forEach(r=>{totals[r.MarketUnit]=(totals[r.MarketUnit]||0)+(r.XPValue||0)});
+    const [code,xp]=Object.entries(totals).sort((a,b)=>b[1]-a[1])[0]||[];
+    if(!code||!xp)return;
+    const mu=MARKET_UNITS.find(m=>m.code===code)||{name:code};
+    const monthName=new Date(new Date().setMonth(new Date().getMonth()-1)).toLocaleDateString('en-US',{month:'long'});
+    $('champ-text').innerHTML=`Defending champions: <b>${esc(mu.name)}</b> took ${esc(monthName)} with ${xp.toLocaleString()} points. Dethrone them.`;
+    $('champ-banner').style.display='flex';
+  }catch(e){/* banner stays hidden */}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RECORDINGS
+// ═══════════════════════════════════════════════════════════════
+async function loadRecordings(){
+  const grid=$('rec-grid');
+  try{
+    const {value}=await callFlow('getRecordings');
+    $('rec-count').textContent=value.length+' available';
+    countUp($('stat-recordings'),value.length);
+    if(!value.length){grid.innerHTML='<div class="empty" style="grid-column:1/-1">No recordings yet — check back after the next session.</div>';return}
+    grid.innerHTML=value.map(it=>`
+      <a class="rec-card" href="${esc(it.TeamsLink||'#')}" target="_blank" rel="noopener" aria-label="Watch recording: ${esc(it.Title)}${it.SessionDate?(', '+fmt(it.SessionDate,{month:'long',day:'numeric',year:'numeric'})):''}">
+        <div class="rec-thumb">
+          <div class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg></div>
+        </div>
+        <div class="rec-body">
+          <div class="rec-t">${esc(it.Title)}</div>
+          <div class="rec-m">
+            <span class="rec-d">${fmt(it.SessionDate,{month:'short',day:'numeric',year:'numeric'})}</span>
+            ${it.Duration?`<span class="rec-dur">${esc(it.Duration)}</span>`:''}
+          </div>
+        </div>
+      </a>`).join('');
+  }catch(e){grid.innerHTML=`<div class="empty" style="grid-column:1/-1">Could not load recordings.<br><small style="opacity:.6">${esc(e.message)}</small></div>`}
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RECAPS
+// ═══════════════════════════════════════════════════════════════
+async function loadRecaps(){
+  const list=$('recap-list');
+  try{
+    const {value}=await callFlow('getRecaps');
+    $('recap-count').textContent=value.length+' recaps';
+    countUp($('stat-recaps'),value.length);
+    if(!value.length){list.innerHTML='<div class="empty">No recaps yet.</div>';return}
+    list.innerHTML=value.map((it,i)=>{
+      const preview=(it.RecapBody||'').replace(/<[^>]+>/g,'').substring(0,130);
+      return`
+        <button class="recap-row" type="button" aria-expanded="false" aria-controls="recap-x-${i}" onclick="toggleRecap(${i},this)">
+          <div class="recap-pip" aria-hidden="true"></div>
+          <div class="recap-c">
+            <h3 class="recap-t">${esc(it.Title)}</h3>
+            <div class="recap-p">${esc(preview)}…</div>
+          </div>
+          <div class="recap-r">
+            <span class="recap-d">${fmt(it.SessionDate,{month:'short',day:'numeric'})}</span>
+            <span class="read-tag">Read</span>
+          </div>
+          <svg class="recap-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+        <div class="recap-x" id="recap-x-${i}" role="region" aria-label="${esc(it.Title)} recap">${esc((it.RecapBody||'').replace(/<[^>]+>/g,''))}</div>`;
+    }).join('');
+  }catch(e){list.innerHTML=`<div class="empty">Could not load recaps.<br><small style="opacity:.6">${esc(e.message)}</small></div>`}
+}
+function toggleRecap(i,btn){
+  const open=$('recap-x-'+i).classList.toggle('open');
+  if(btn)btn.setAttribute('aria-expanded',open?'true':'false');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CHALLENGES + CUP
+//  Score model: monthly. Every completion writes a row keyed with
+//  MonthKey ("2026-06"); the leaderboard only queries the current
+//  month, so standings reset automatically on the 1st — no cleanup
+//  flow needed. Duplicate guard = same user + challenge + month.
+// ═══════════════════════════════════════════════════════════════
+function renderChallenges(){
+  $('challenge-list').innerHTML=CHALLENGES.map(ch=>`
+    <div class="ch-card" data-ch="${ch.id}" style="margin-bottom:11px">
+      <div class="ch-ic ${ch.c}" aria-hidden="true">${ch.icon}</div>
+      <div class="ch-info">
+        <div class="ch-name">${esc(ch.label)}</div>
+        <div class="ch-desc">${esc(ch.desc)}</div>
+      </div>
+      <div class="ch-side">
+        <span class="ch-xp">+${ch.xp} pts</span>
+        <button class="ch-btn" type="button" onclick="markDone('${ch.id}',this)">Mark done</button>
+      </div>
+    </div>`).join('');
+}
+
+async function markDone(id,btn){
+  const me=getIdentity();
+  if(!me){
+    toast('Join the Cup first — add your name and market unit above ☝️','info');
+    $('identity-bar').scrollIntoView({behavior:REDUCED_MOTION?'auto':'smooth',block:'center'});
+    const nf=$('id-name'); if(nf) nf.focus();
+    return;
+  }
+  const ch=CHALLENGES.find(c=>c.id===id); if(!ch)return;
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    const r=await callFlow('markDone',{
+      userName:me.name, marketUnit:me.mu,
+      challengeId:id, xpValue:ch.xp, monthKey:monthKey(),
+    });
+    if(r.status==='duplicate'){
+      toast('Already logged this month — nice consistency 🎯','info');
+      setDone(btn,ch,false);
+    }else{
+      setDone(btn,ch,true);
+      toast(`+${ch.xp} pts for ${me.mu}! "${ch.label}" complete`,'success');
+      confettiBurst(40);
+      await loadLeaderboard();
+    }
+  }catch(e){
+    console.error('markDone failed:',e);
+    toast('Could not save — '+e.message,'error');
+    btn.disabled=false; btn.textContent='Mark done';
+  }
+}
+
+function setDone(btn,ch,animate){
+  const card=btn.closest('[data-ch]');
+  if(card)card.classList.add('is-done');
+  btn.textContent='✓ Done this month'; btn.disabled=true; btn.classList.add('done');
+  if(animate&&card&&!REDUCED_MOTION){
+    const pop=document.createElement('span');
+    pop.className='xp-pop'; pop.textContent=`+${ch.xp}`;
+    card.appendChild(pop); setTimeout(()=>pop.remove(),1800);
+  }
+}
+
+async function loadProgress(){
+  const me=getIdentity(); if(!me)return;
+  try{
+    const {value}=await callFlow('getProgress',{userName:me.name,monthKey:monthKey()});
+    new Set(value.map(v=>v.Challenge)).forEach(id=>{
+      const btn=document.querySelector(`[data-ch="${id}"] .ch-btn`);
+      const ch=CHALLENGES.find(c=>c.id===id);
+      if(btn&&ch)setDone(btn,ch,false);
+    });
+  }catch(e){/* non-critical */}
+}
+
+async function loadLeaderboard(){
+  const el=$('cup-board');
+  try{
+    const {value}=await callFlow('getLeaderboard',{monthKey:monthKey()});
+    const totals={}; MARKET_UNITS.forEach(m=>totals[m.code]=0);
+    let total=0;
+    value.forEach(r=>{
+      const mu=r.MarketUnit; const xp=r.XPValue||0; total+=xp;
+      if(mu in totals)totals[mu]+=xp; else totals[mu]=(totals[mu]||0)+xp;
+    });
+    countUp($('stat-xp'),total);
+    const ranked=Object.entries(totals).sort((a,b)=>b[1]-a[1]);
+    const max=Math.max(ranked[0]?.[1]||0,1);
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=ranked.map(([code,xp],i)=>{
+      const mu=MARKET_UNITS.find(m=>m.code===code)||{name:code,color:'#9B5CFF'};
+      const pct=Math.round((xp/max)*100);
+      return`
+        <div class="mu-row">
+          <div class="mu-rank ${i===0?'r1':''}">${medals[i]??(i+1)}</div>
+          <div class="mu-chip" style="background:${mu.color}" aria-hidden="true">${esc(code)}</div>
+          <div class="mu-info">
+            <div class="mu-name">${esc(mu.name)}</div>
+            <div class="mu-track" role="img" aria-label="Rank ${i+1}: ${esc(mu.name)}, ${xp.toLocaleString()} points"><div class="mu-fill" data-w="${pct}" style="background:linear-gradient(90deg,${mu.color},${mu.color}aa)"></div></div>
+          </div>
+          <div class="mu-xp">${xp.toLocaleString()}</div>
+        </div>`;
+    }).join('');
+    if(REDUCED_MOTION){
+      el.querySelectorAll('.mu-fill').forEach(f=>f.style.width=f.dataset.w+'%');
+    }else{
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        el.querySelectorAll('.mu-fill').forEach(f=>f.style.width=f.dataset.w+'%');
+      }));
+    }
+  }catch(e){
+    el.innerHTML='<p style="padding:1rem;font-size:12px;color:var(--ink3);text-align:center">Standings unavailable</p>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CONFETTI
+// ═══════════════════════════════════════════════════════════════
+const CONFETTI_COLORS=['#25D0F4','#3076FF','#9B5CFF','#E14DF2','#FF6A3D','#FFB23E'];
+function confettiBurst(n=60){
+  if(REDUCED_MOTION) return;   // skip celebratory motion when not wanted
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');
+    c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.width=c.style.height=(5+Math.random()*6)+'px';
+    c.style.background=CONFETTI_COLORS[i%CONFETTI_COLORS.length];
+    c.style.animationDuration=(2+Math.random()*2.2)+'s';
+    c.style.animationDelay=(Math.random()*0.5)+'s';
+    if(Math.random()>.5)c.style.borderRadius='50%';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),5000);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  🥚 EASTER EGGS — hinted cryptically in the footer
+//  1) Konami code (↑↑↓↓←→←→BA) → confetti storm + party mode
+//  2) Click the ✦ in the footer 5× → sparkle cursor trail toggle
+//  3) Type "1886" anywhere → Ice Cold Mode (Coke red + carbonation)
+// ═══════════════════════════════════════════════════════════════
+(function(){
+  const seq=['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let pos=0;
+  window.addEventListener('keydown',e=>{
+    const k=e.key;
+    if(typeof k!=='string'||/^(INPUT|SELECT|TEXTAREA)$/.test(e.target?.tagName||''))return;
+    pos=(k===seq[pos]||k.toLowerCase()===seq[pos])?pos+1:0;
+    if(pos===seq.length){
+      pos=0;
+      document.body.classList.toggle('party');
+      confettiBurst(140);
+      toast(document.body.classList.contains('party')
+        ?'🏆 POWER USER MODE UNLOCKED — you found the Konami code'
+        :'Power user mode off. Until next time… ✦','gold');
+    }
+  });
+})();
+
+(function(){
+  let clicks=0, trailing=false, timer;
+  $('logo-egg').addEventListener('click',()=>{
+    clicks++; clearTimeout(timer); timer=setTimeout(()=>clicks=0,1600);
+    if(clicks>=5){
+      clicks=0; trailing=!trailing;
+      if(trailing&&REDUCED_MOTION){
+        trailing=false;
+        toast('Sparkle trail is disabled while reduced-motion is on ✦','info');
+        return;
+      }
+      toast(trailing?'✨ Sparkle trail engaged':'Sparkle trail off','info');
+    }
+  });
+  document.addEventListener('mousemove',e=>{
+    if(!trailing||REDUCED_MOTION||Math.random()>.35)return;
+    const s=document.createElement('span');
+    s.className='sparkle'; s.textContent='✦';
+    s.style.left=(e.clientX+(Math.random()*16-8))+'px';
+    s.style.top=(e.clientY+(Math.random()*16-8))+'px';
+    s.style.color=CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)];
+    document.body.appendChild(s); setTimeout(()=>s.remove(),900);
+  });
+})();
+
+//  3) Type "1886" (the year it all began) → ICE COLD MODE 🥤
+//     Coke-red theme + carbonation bubbles rising off the page.
+(function(){
+  let buf='', fizzTimer=null;
+  function bubbleUp(){
+    if(REDUCED_MOTION) return;
+    const b=document.createElement('div');
+    b.className='bubble';
+    const size=4+Math.random()*12;
+    b.style.width=b.style.height=size+'px';
+    b.style.left=Math.random()*100+'vw';
+    b.style.setProperty('--sway',(Math.random()*60-30)+'px');
+    b.style.animationDuration=(4+Math.random()*5)+'s';
+    document.body.appendChild(b);
+    setTimeout(()=>b.remove(),9500);
+  }
+  function setIceCold(on){
+    document.body.classList.toggle('icecold',on);
+    clearInterval(fizzTimer); fizzTimer=null;
+    if(on){
+      if(!REDUCED_MOTION){
+        for(let i=0;i<24;i++)setTimeout(bubbleUp,i*90);   // opening pour
+        fizzTimer=setInterval(bubbleUp,420);               // steady carbonation
+      }
+      toast('🥤 ICE COLD MODE — est. 1886. Stay refreshed.','gold');
+    }else{
+      toast('Back to room temperature. ✦','info');
+    }
+  }
+  window.addEventListener('keydown',e=>{
+    if(typeof e.key!=='string'||e.key.length!==1)return;
+    if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target?.tagName||''))return;
+    buf=(buf+e.key).slice(-4);
+    if(buf==='1886'){buf='';setIceCold(!document.body.classList.contains('icecold'))}
+  });
+})();
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+async function init(){
+  renderIdentityBar();
+  renderChallenges();
+  if(CONFIG.spotlightEmail)$('pv-submit').href=`mailto:${CONFIG.spotlightEmail}?subject=Prompt%20Vault%20submission&body=Title%3A%0APrompt%3A%0AWhich%20app%3A%0AWhy%20it%20works%3A`;
+  await Promise.allSettled([
+    loadSpotlight(),
+    loadVault(),
+    loadRecordings(),
+    loadRecaps(),
+    loadLeaderboard(),
+    loadChampion(),
+    loadProgress(),
+  ]);
+}
+init();
+</script>
+</body>
+</html>
